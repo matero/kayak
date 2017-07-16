@@ -1,3 +1,26 @@
+/*
+MIT License
+
+Copyright (c) 2017 Juan José Gil
+
+Permission is hereby granted, free of charge, to any person obtaining a copy
+of this software and associated documentation files (the "Software"), to deal
+in the Software without restriction, including without limitation the rights
+to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+copies of the Software, and to permit persons to whom the Software is
+furnished to do so, subject to the following conditions:
+
+The above copyright notice and this permission notice shall be included in all
+copies or substantial portions of the Software.
+
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+SOFTWARE.
+*/
 package kayak.datastore
 
 import com.google.appengine.api.datastore.Blob
@@ -31,7 +54,7 @@ interface Property<T> : Serializable {
 
     fun toModel(value: Any?): T? = value as T?
 
-    fun write(data: PropertyContainer, values: T?) = Unit
+    fun write(data: PropertyContainer, value: T?) = Unit
 
     fun toDatastore(value: T?): Any? = value
 }
@@ -76,36 +99,40 @@ abstract class ScalarProperty<T>(override val name: String, override val propert
 }
 
 abstract class UnindexedScalar<T>(name: String, property: String, type: Class<T>) : ScalarProperty<T>(name, property, type) {
-    override fun write(data: PropertyContainer, values: T?) = data.setUnindexedProperty(property, toDatastore(values))
+    override fun write(data: PropertyContainer, value: T?) =
+            data.setUnindexedProperty(property, toDatastore(value))
 }
 
 abstract class IndexedScalar<T>(name: String, property: String, type: Class<T>)
     : ScalarProperty<T>(name, property, type), Indexed<T> {
-    override val asc = Query.SortPredicate(property, Query.SortDirection.ASCENDING)
-    override val desc = Query.SortPredicate(property, Query.SortDirection.DESCENDING)
-    override val isNull = equal(null)
-    override val isNotNull = notEqual(null)
-    override val projection = PropertyProjection(property, type)
+    override final val asc = Query.SortPredicate(property, Query.SortDirection.ASCENDING)
+    override final val desc = Query.SortPredicate(property, Query.SortDirection.DESCENDING)
+    override final val isNull = equal(null)
+    override final val isNotNull = notEqual(null)
+    override final val projection = PropertyProjection(property, type)
 
-    override fun equal(value: T?): Query.Filter =
+    override final fun write(data: PropertyContainer, value: T?) =
+            data.setIndexedProperty(property, toDatastore(value))
+
+    override final fun equal(value: T?): Query.Filter =
             Query.FilterPredicate(property, Query.FilterOperator.EQUAL, toDatastore(value))
 
-    override fun lessThan(value: T): Query.Filter =
+    override final fun lessThan(value: T): Query.Filter =
             Query.FilterPredicate(property, Query.FilterOperator.LESS_THAN, toDatastore(value))
 
-    override fun lessThanOrEqual(value: T): Query.Filter =
+    override final fun lessThanOrEqual(value: T): Query.Filter =
             Query.FilterPredicate(property, Query.FilterOperator.LESS_THAN_OR_EQUAL, toDatastore(value))
 
-    override fun greaterThan(value: T): Query.Filter =
+    override final fun greaterThan(value: T): Query.Filter =
             Query.FilterPredicate(property, Query.FilterOperator.GREATER_THAN, toDatastore(value))
 
-    override fun greaterThanOrEqual(value: T): Query.Filter =
+    override final fun greaterThanOrEqual(value: T): Query.Filter =
             Query.FilterPredicate(property, Query.FilterOperator.GREATER_THAN_OR_EQUAL, toDatastore(value))
 
-    override fun notEqual(value: T?): Query.Filter =
+    override final fun notEqual(value: T?): Query.Filter =
             Query.FilterPredicate(property, Query.FilterOperator.NOT_EQUAL, toDatastore(value))
 
-    override fun memberOf(values: Iterable<T?>): Query.Filter =
+    override final fun memberOf(values: Iterable<T?>): Query.Filter =
             Query.FilterPredicate(property, Query.FilterOperator.EQUAL, toDatastore(values))
 }
 
@@ -224,6 +251,9 @@ abstract class IndexedList<E>(name: String, property: String, elementType: Class
     override val isNull = equal(null)
     override val isNotNull = notEqual(null)
     override val projection = PropertyProjection(property, elementType)
+
+    override final fun write(data: PropertyContainer, value: List<E>?) =
+            data.setIndexedProperty(property, toDatastore(value))
 
     override fun equal(value: E?): Query.Filter =
             Query.FilterPredicate(property, Query.FilterOperator.EQUAL, elementToDatastore(value))
