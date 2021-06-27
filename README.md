@@ -1,11 +1,9 @@
-Kayay: light AppEngine utilities
+Kayak: light webapp library
 =================================
 
-Simple Kotlin kit / library to access native java facilities over AppEngine. See the [Google App Engine standard environment
-documentation](https://cloud.google.com/kayak/docs/java/) for more detailed instructions.
+Simple Kotlin kit / library to develop monolithic webapps using plain servlets as starting point.
 
-* [Kotlin](https://kotlinlang.org/) (at least 1.1)
-* [Maven](https://maven.apache.org/download.cgi) (at least 3.5)
-* [Google Cloud SDK](https://cloud.google.com/sdk/) (aka gcloud)
+* [Kotlin](https://kotlinlang.org/) (at least 1.5)
+* [Maven](https://maven.apache.org/) (at least 3.8.1, don't worry it has excellent maven wrapper)
 
-It's inspired by the excellent toolkit developed for groovy, [gaelyk](http://gaelyk.appspot.com/).
+It's inspired by many little toolkits saw in my spare time :).
