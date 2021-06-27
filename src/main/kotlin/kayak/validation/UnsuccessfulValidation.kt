@@ -7,6 +7,8 @@ value class UnsuccessfulValidation<T>(override val failure: Failure) : Validated
 
   override val ok: Boolean
     get() = false
+  override val failed: Boolean
+    get() = true
   override val value: T
     get() = throw IllegalStateException("Validation was unsuccessful, no value to get")
 }

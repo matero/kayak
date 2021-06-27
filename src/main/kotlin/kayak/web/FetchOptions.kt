@@ -4,6 +4,7 @@ import jakarta.servlet.http.HttpServletRequest
 import kayak.validation.SuccessfulValidation
 import kayak.validation.UnsuccessfulValidation
 import kayak.validation.Validated
+import kayak.validation.validate
 
 class FetchOptions private constructor(
   val chunkSize: ChunkSize,
@@ -194,32 +195,33 @@ class FetchOptions private constructor(
 
     fun at(request: HttpServletRequest): Validated<FetchOptions> {
       val chunkSize = ChunkSize.at(request)
-      if (!chunkSize.ok)
-        return UnsuccessfulValidation(chunkSize.failure)
       val limit = Limit.at(request)
-      if (!limit.ok)
-        return UnsuccessfulValidation(limit.failure)
       val offset = Offset.at(request)
-      if (!offset.ok)
-        return UnsuccessfulValidation(offset.failure)
       val prefetchSize = PrefetchSize.at(request)
-      if (!prefetchSize.ok)
-        return UnsuccessfulValidation(prefetchSize.failure)
       val orderBy = OrderBy.at(request)
-      if (!orderBy.ok)
-        return UnsuccessfulValidation(orderBy.failure)
 
-      return if (chunkSize.value == ChunkSize.DEFAULT
-        && limit.value == Limit.DEFAULT
-        && offset.value == Offset.DEFAULT
-        && prefetchSize.value == PrefetchSize.DEFAULT
-        && orderBy.value == OrderBy.DEFAULT
-      ) {
-        VALIDATED_DEFAULT_FETCH_OPTIONS
+      val properties = validate<FetchOptions>(
+        "chunkSize" to chunkSize,
+        "limit" to limit,
+        "offset" to offset,
+        "prefetchSize" to prefetchSize,
+        "orderBy" to orderBy)
+
+      return if (properties.ok) {
+        if (chunkSize.value == ChunkSize.DEFAULT
+          && limit.value == Limit.DEFAULT
+          && offset.value == Offset.DEFAULT
+          && prefetchSize.value == PrefetchSize.DEFAULT
+          && orderBy.value == OrderBy.DEFAULT
+        ) {
+          VALIDATED_DEFAULT_FETCH_OPTIONS
+        } else {
+          SuccessfulValidation(
+            FetchOptions(chunkSize.value, limit.value, offset.value, prefetchSize.value, orderBy.value)
+          )
+        }
       } else {
-        SuccessfulValidation(
-          FetchOptions(chunkSize.value, limit.value, offset.value, prefetchSize.value, orderBy.value)
-        )
+        properties
       }
     }
   }

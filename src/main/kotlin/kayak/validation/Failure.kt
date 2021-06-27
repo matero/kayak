@@ -1,5 +1,7 @@
 package kayak.validation
 
 interface Failure {
-  fun message(): String
+  fun message(): String = "failure"
+
+  fun details(): Map<String, Validated<*>> = emptyMap()
 }

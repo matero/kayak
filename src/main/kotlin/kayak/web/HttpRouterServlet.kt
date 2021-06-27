@@ -7,6 +7,7 @@ import java.io.IOException
 import java.text.MessageFormat
 import java.util.*
 import java.util.regex.Pattern
+import kotlin.collections.ArrayList
 
 abstract class HttpRouterServlet : jakarta.servlet.http.HttpServlet() {
   protected open fun notAuthorized(response: HttpServletResponse) {
@@ -28,7 +29,6 @@ abstract class HttpRouterServlet : jakarta.servlet.http.HttpServlet() {
    *
    * @see jakarta.servlet.Servlet.service
    */
-  @Throws(ServletException::class, IOException::class)
   override fun service(request: HttpServletRequest, response: HttpServletResponse) {
     when (request.method) {
       "GET" -> {
@@ -101,21 +101,23 @@ abstract class HttpRouterServlet : jakarta.servlet.http.HttpServlet() {
    * @see jakarta.servlet.ServletOutputStream
    * @see jakarta.servlet.ServletResponse.setContentType
    */
-  fun doPatch(request: HttpServletRequest, response: HttpServletResponse) = unknownPatchPath(request, response)
+  fun doPatch(request: HttpServletRequest, response: HttpServletResponse) = unhandledPatch(request, response)
 
-  protected open fun unknownGetPath(request: HttpServletRequest, response: HttpServletResponse) = super.doGet(request, response)
+  protected open fun unhandledDelete(request: HttpServletRequest, response: HttpServletResponse) = super.doDelete(request, response)
 
-  protected open fun unknownDeletePath(request: HttpServletRequest, response: HttpServletResponse) = super.doDelete(request, response)
+  protected open fun unhandledGet(request: HttpServletRequest, response: HttpServletResponse) = super.doGet(request, response)
 
-  protected open fun unknownHeadPath(request: HttpServletRequest, response: HttpServletResponse) = super.doHead(request, response)
+  protected open fun unhandledHead(request: HttpServletRequest, response: HttpServletResponse) = super.doHead(request, response)
 
-  protected open fun unknownOptionsPath(request: HttpServletRequest, response: HttpServletResponse) = super.doOptions(request, response)
+  protected open fun unhandledOptions(request: HttpServletRequest, response: HttpServletResponse) = super.doOptions(request, response)
 
-  protected open fun unknownPostPath(request: HttpServletRequest, response: HttpServletResponse) = super.doPost(request, response)
+  protected open fun unhandledPost(request: HttpServletRequest, response: HttpServletResponse) = super.doPost(request, response)
 
-  protected open fun unknownPutPath(request: HttpServletRequest, response: HttpServletResponse) = super.doPut(request, response)
+  protected open fun unhandledPut(request: HttpServletRequest, response: HttpServletResponse) = super.doPut(request, response)
 
-  protected open fun unknownPatchPath(request: HttpServletRequest, response: HttpServletResponse) {
+  protected open fun unhandledTrace(request: HttpServletRequest, response: HttpServletResponse) = super.doTrace(request, response)
+
+  protected open fun unhandledPatch(request: HttpServletRequest, response: HttpServletResponse) {
     response.sendError(getMethodNotSupportedCode(request.protocol), localizedMessage("http.method_patch_not_supported") ?: "PATCH not supported")
   }
 
@@ -131,8 +133,6 @@ abstract class HttpRouterServlet : jakarta.servlet.http.HttpServlet() {
     if (response.containsHeader("Last-Modified")) return
     if (lastModified >= 0) response.setDateHeader("Last-Modified", lastModified)
   }
-
-  protected open fun unknownTracePath(request: HttpServletRequest, response: HttpServletResponse) = super.doTrace(request, response)
 
   companion object {
     private val localizedMessages = ResourceBundle.getBundle("jakarta.servlet.http.LocalStrings")

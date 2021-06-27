@@ -4,6 +4,8 @@ package kayak.validation
 value class SuccessfulValidation<T> private constructor(private val v: Any) : Validated<T> {
   override val ok: Boolean
     get() = true
+  override val failed: Boolean
+    get() = false
 
   @Suppress("UNCHECKED_CAST")
   override val value: T
