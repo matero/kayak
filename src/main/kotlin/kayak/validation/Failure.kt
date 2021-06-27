@@ -1,5 +1,5 @@
 package kayak.validation
 
 interface Failure {
-    fun message(): String
+  fun message(): String
 }
