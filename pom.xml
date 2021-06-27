@@ -13,12 +13,14 @@
     <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
     <project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
 
-    <maven.compiler.source>1.8</maven.compiler.source>
-    <maven.compiler.target>1.8</maven.compiler.target>
+    <maven.compiler.source>16</maven.compiler.source>
+    <maven.compiler.target>16</maven.compiler.target>
+    <maven.compiler.release>16</maven.compiler.release>
     <maven.compiler.showDeprecation>true</maven.compiler.showDeprecation>
 
     <kotlin.version>1.5.20</kotlin.version>
     <kotlin.compiler.incremental>false</kotlin.compiler.incremental>
+    <kotlin.compiler.jvmTarget>16</kotlin.compiler.jvmTarget>
 
     <dokka.version>1.4.32</dokka.version>
     <jetty.version>11.0.5</jetty.version>
@@ -27,6 +29,21 @@
   <prerequisites>
     <maven>3.8.1</maven>
   </prerequisites>
+
+  <developers>
+    <developer>
+      <id>el elfo</id>
+      <name>Juanjo Gil</name>
+      <email>matero@gmail.com</email>
+      <url>https://github.com/matero/</url>
+      <roles>
+        <role>developer</role>
+        <role>mate cebator</role>
+        <role>dad of the century ;)</role>
+      </roles>
+      <timezone>-4</timezone>
+    </developer>
+  </developers>
 
   <dependencies>
     <dependency>
