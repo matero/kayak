@@ -1,17 +1,13 @@
 package kayak.web
 
 import jakarta.servlet.ServletException
-import jakarta.servlet.http.HttpServletRequest
-import jakarta.servlet.http.HttpServletResponse
 import java.io.IOException
-import java.text.MessageFormat
-import java.util.*
 import java.util.regex.Pattern
 import kotlin.collections.ArrayList
 
 abstract class HttpRouterServlet : jakarta.servlet.http.HttpServlet() {
-  protected open fun notAuthorized(response: HttpServletResponse) {
-    response.status = HttpServletResponse.SC_FORBIDDEN
+  protected open fun notAuthorized(response: Response) {
+    response.status = Response.SC_FORBIDDEN
   }
 
   /**
@@ -19,9 +15,9 @@ abstract class HttpRouterServlet : jakarta.servlet.http.HttpServlet() {
    * `do`*XXX* methods defined in this class. This method is an HTTP-specific version of the
    * [jakarta.servlet.Servlet.service] method. There's no need to override this method.
    *
-   * @param request the [HttpServletRequest] object that contains the request the client made of the servlet
+   * @param request the [Request] object that contains the request the client made of the servlet
    *
-   * @param response the [HttpServletResponse] object that contains the response the servlet returns to the client
+   * @param response the [Response] object that contains the response the servlet returns to the client
    *
    * @throws IOException if an input or output error occurs while the servlet is handling the HTTP request
    *
@@ -29,7 +25,7 @@ abstract class HttpRouterServlet : jakarta.servlet.http.HttpServlet() {
    *
    * @see jakarta.servlet.Servlet.service
    */
-  override fun service(request: HttpServletRequest, response: HttpServletResponse) {
+  override fun service(request: Request, response: Response) {
     when (request.method) {
       "GET" -> {
         val lastModified = getLastModified(request)
@@ -45,7 +41,7 @@ abstract class HttpRouterServlet : jakarta.servlet.http.HttpServlet() {
             maybeSetLastModified(response, lastModified)
             doGet(request, response)
           } else {
-            response.status = HttpServletResponse.SC_NOT_MODIFIED
+            response.status = Response.SC_NOT_MODIFIED
           }
         }
       }
@@ -66,8 +62,8 @@ abstract class HttpRouterServlet : jakarta.servlet.http.HttpServlet() {
         //
         var errMsg = localizedMessage("http.method_not_implemented")
         val errArgs = arrayOf(request.method)
-        errMsg = MessageFormat.format(errMsg, *errArgs)
-        response.sendError(HttpServletResponse.SC_NOT_IMPLEMENTED, errMsg)
+        errMsg = java.text.MessageFormat.format(errMsg, *errArgs)
+        response.sendError(Response.SC_NOT_IMPLEMENTED, errMsg)
       }
     }
   }
@@ -92,8 +88,8 @@ abstract class HttpRouterServlet : jakarta.servlet.http.HttpServlet() {
    *<p/>
    * If the HTTP PATCH request is incorrectly formatted, `doPost` returns an HTTP "Bad Request" message.
    *<p/>
-   * @param request an [HttpServletRequest] object that contains the request the client has made of the servlet
-   * @param response an [HttpServletResponse] object that contains the response the servlet sends to the client
+   * @param request an [Request] object that contains the request the client has made of the servlet
+   * @param response an [Response] object that contains the response the servlet sends to the client
    *
    * @throws IOException if an input or output error is detected when the servlet handles the request
    * @throws ServletException if the request for the POST could not be handled
@@ -101,24 +97,24 @@ abstract class HttpRouterServlet : jakarta.servlet.http.HttpServlet() {
    * @see jakarta.servlet.ServletOutputStream
    * @see jakarta.servlet.ServletResponse.setContentType
    */
-  fun doPatch(request: HttpServletRequest, response: HttpServletResponse) = unhandledPatch(request, response)
+  fun doPatch(request: Request, response: Response) = unhandledPatch(request, response)
 
-  protected open fun unhandledDelete(request: HttpServletRequest, response: HttpServletResponse) = super.doDelete(request, response)
+  protected open fun unhandledDelete(request: Request, response: Response) = super.doDelete(request, response)
 
-  protected open fun unhandledGet(request: HttpServletRequest, response: HttpServletResponse) = super.doGet(request, response)
+  protected open fun unhandledGet(request: Request, response: Response) = super.doGet(request, response)
 
-  protected open fun unhandledHead(request: HttpServletRequest, response: HttpServletResponse) = super.doHead(request, response)
+  protected open fun unhandledHead(request: Request, response: Response) = super.doHead(request, response)
 
-  protected open fun unhandledOptions(request: HttpServletRequest, response: HttpServletResponse) = super.doOptions(request, response)
+  protected open fun unhandledOptions(request: Request, response: Response) = super.doOptions(request, response)
 
-  protected open fun unhandledPost(request: HttpServletRequest, response: HttpServletResponse) = super.doPost(request, response)
+  protected open fun unhandledPost(request: Request, response: Response) = super.doPost(request, response)
 
-  protected open fun unhandledPut(request: HttpServletRequest, response: HttpServletResponse) = super.doPut(request, response)
+  protected open fun unhandledPut(request: Request, response: Response) = super.doPut(request, response)
 
-  protected open fun unhandledTrace(request: HttpServletRequest, response: HttpServletResponse) = super.doTrace(request, response)
+  protected open fun unhandledTrace(request: Request, response: Response) = super.doTrace(request, response)
 
-  protected open fun unhandledPatch(request: HttpServletRequest, response: HttpServletResponse) {
-    response.sendError(getMethodNotSupportedCode(request.protocol), localizedMessage("http.method_patch_not_supported") ?: "PATCH not supported")
+  protected open fun unhandledPatch(request: Request, response: Response) {
+    response.sendError(getMethodNotSupportedCode(request.protocol), localizedMessage("http.method_patch_not_supported"))
   }
 
   /**
@@ -129,23 +125,23 @@ abstract class HttpRouterServlet : jakarta.servlet.http.HttpServlet() {
    * @param response response to update
    * @param lastModified value to set as header `Last-Modified`.
    */
-  private fun maybeSetLastModified(response: HttpServletResponse, lastModified: Long) {
+  private fun maybeSetLastModified(response: Response, lastModified: Long) {
     if (response.containsHeader("Last-Modified")) return
     if (lastModified >= 0) response.setDateHeader("Last-Modified", lastModified)
   }
 
   companion object {
-    private val localizedMessages = ResourceBundle.getBundle("jakarta.servlet.http.LocalStrings")
+    private val localizedMessages = java.util.ResourceBundle.getBundle("jakarta.servlet.http.LocalStrings")
 
     private val pathVariable = Pattern.compile("\\{(\\w+)}")
 
     protected sealed interface Path {
-      fun matches(request: HttpServletRequest): Boolean
+      fun matches(request: Request): Boolean
     }
 
     /** Path that represents the INDEX or ROOT path `"/"`.  */
     object IndexPath : Path {
-      override fun matches(request: HttpServletRequest): Boolean {
+      override fun matches(request: Request): Boolean {
         val pathInfo = request.pathInfo
         return null == pathInfo || pathInfo.isEmpty() || "/" == pathInfo
       }
@@ -159,7 +155,7 @@ abstract class HttpRouterServlet : jakarta.servlet.http.HttpServlet() {
     internal value class StaticPath constructor(private val value: String) : Path {
       override fun toString() = "Path('$value')"
 
-      override fun matches(request: HttpServletRequest) = value == request.pathInfo
+      override fun matches(request: Request) = value == request.pathInfo
     }
 
     internal class ParameterizedPath constructor(
@@ -174,7 +170,7 @@ abstract class HttpRouterServlet : jakarta.servlet.http.HttpServlet() {
       override fun equals(other: Any?) = (this === other) || (if (other is ParameterizedPath) uri == other.uri else false)
 
 
-      override fun matches(request: HttpServletRequest): Boolean {
+      override fun matches(request: Request): Boolean {
         if (!IndexPath.matches(request)) {
           val matcher = regex.matcher(request.pathInfo)
           if (matcher.matches()) {
@@ -210,12 +206,12 @@ abstract class HttpRouterServlet : jakarta.servlet.http.HttpServlet() {
       }
     }
 
-    private fun localizedMessage(key: String): String? = localizedMessages.getString(key)
+    private fun localizedMessage(key: String): String = localizedMessages.getString(key)
 
     private fun getMethodNotSupportedCode(protocol: String): Int {
       return when (protocol) {
-        "HTTP/0.9", "HTTP/1.0" -> HttpServletResponse.SC_BAD_REQUEST
-        else -> HttpServletResponse.SC_METHOD_NOT_ALLOWED
+        "HTTP/0.9", "HTTP/1.0" -> Response.SC_BAD_REQUEST
+        else -> Response.SC_METHOD_NOT_ALLOWED
       }
     }
   }

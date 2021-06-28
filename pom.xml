@@ -18,17 +18,25 @@
     <maven.compiler.release>16</maven.compiler.release>
     <maven.compiler.showDeprecation>true</maven.compiler.showDeprecation>
 
-    <kotlin.version>1.5.20</kotlin.version>
+    <kotlin_target_version>1.5.20</kotlin_target_version>
     <kotlin.compiler.incremental>false</kotlin.compiler.incremental>
     <kotlin.compiler.jvmTarget>16</kotlin.compiler.jvmTarget>
 
-    <dokka.version>1.4.32</dokka.version>
-    <jetty.version>11.0.5</jetty.version>
+    <dokka_target_version>1.4.32</dokka_target_version>
+    <jetty_target_version>11.0.5</jetty_target_version>
+    <spek_target_version>2.0.16</spek_target_version>
   </properties>
 
   <prerequisites>
     <maven>3.8.1</maven>
   </prerequisites>
+
+  <repositories>
+    <repository>
+      <id>spek-dev</id>
+      <url>https://dl.bintray.com/spekframework/spek-dev</url>
+    </repository>
+  </repositories>
 
   <developers>
     <developer>
@@ -45,85 +53,122 @@
     </developer>
   </developers>
 
+  <dependencyManagement>
+    <dependencies>
+      <dependency>
+        <groupId>org.jetbrains.kotlin</groupId>
+        <artifactId>kotlin-stdlib-common</artifactId>
+        <version>${kotlin_target_version}</version>
+      </dependency>
+      <dependency>
+        <groupId>org.jetbrains.kotlin</groupId>
+        <artifactId>kotlin-stdlib-jdk8</artifactId>
+        <version>${kotlin_target_version}</version>
+      </dependency>
+      <dependency>
+        <groupId>org.jetbrains.kotlin</groupId>
+        <artifactId>kotlin-reflect</artifactId>
+        <version>${kotlin_target_version}</version>
+      </dependency>
+    </dependencies>
+  </dependencyManagement>
+
   <dependencies>
     <dependency>
       <groupId>org.jetbrains.kotlin</groupId>
       <artifactId>kotlin-stdlib-jdk8</artifactId>
-      <version>${kotlin.version}</version>
     </dependency>
     <dependency>
       <groupId>org.eclipse.jetty</groupId>
       <artifactId>jetty-server</artifactId>
-      <version>${jetty.version}</version>
+      <version>${jetty_target_version}</version>
     </dependency>
     <dependency>
       <groupId>org.eclipse.jetty</groupId>
       <artifactId>jetty-servlets</artifactId>
-      <version>${jetty.version}</version>
+      <version>${jetty_target_version}</version>
     </dependency>
-      <dependency>
-          <groupId>org.jetbrains.kotlin</groupId>
-          <artifactId>kotlin-test</artifactId>
-          <version>${kotlin.version}</version>
-          <scope>test</scope>
-      </dependency>
+
+    <!-- testing dependencies -->
+    <dependency>
+      <groupId>org.spekframework.spek2</groupId>
+      <artifactId>spek-dsl-jvm</artifactId>
+      <version>${spek_target_version}</version>
+      <scope>test</scope>
+    </dependency>
+    <dependency>
+      <groupId>org.spekframework.spek2</groupId>
+      <artifactId>spek-runner-junit5</artifactId>
+      <version>${spek_target_version}</version>
+    </dependency>
+    <dependency>
+      <groupId>org.jetbrains.kotlin</groupId>
+      <artifactId>kotlin-reflect</artifactId>
+      <scope>test</scope>
+    </dependency>
   </dependencies>
 
   <build>
-      <defaultGoal>clean install</defaultGoal>
+    <defaultGoal>clean install</defaultGoal>
 
-      <sourceDirectory>src/main/kotlin</sourceDirectory>
+    <sourceDirectory>src/main/kotlin</sourceDirectory>
 
-      <plugins>
-          <plugin>
-              <groupId>org.jetbrains.kotlin</groupId>
-              <artifactId>kotlin-maven-plugin</artifactId>
-              <version>${kotlin.version}</version>
+    <plugins>
+      <plugin>
+        <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-surefire-plugin</artifactId>
+        <version>2.22.2</version>
+      </plugin>
 
-              <executions>
-                  <execution>
-                      <id>compile</id>
-                      <phase>compile</phase>
-                      <goals>
-                          <goal>compile</goal>
-                      </goals>
-                  </execution>
+      <plugin>
+        <groupId>org.jetbrains.kotlin</groupId>
+        <artifactId>kotlin-maven-plugin</artifactId>
+        <version>${kotlin_target_version}</version>
 
-                  <execution>
-                      <id>test-compile</id>
-                      <phase>test-compile</phase>
-                      <goals>
-                          <goal>test-compile</goal>
-                      </goals>
-                  </execution>
-              </executions>
-              <configuration>
-                  <jvmTarget>1.8</jvmTarget>
-              </configuration>
-          </plugin>
+        <executions>
+          <execution>
+            <id>compile</id>
+            <phase>compile</phase>
+            <goals>
+              <goal>compile</goal>
+            </goals>
+          </execution>
 
-          <plugin>
+          <execution>
+            <id>test-compile</id>
+            <phase>test-compile</phase>
+            <goals>
+              <goal>test-compile</goal>
+            </goals>
+          </execution>
+        </executions>
+        <configuration>
+          <jvmTarget>1.8</jvmTarget>
+        </configuration>
+      </plugin>
+
+      <plugin>
+        <groupId>org.jetbrains.dokka</groupId>
+        <artifactId>dokka-maven-plugin</artifactId>
+        <version>${dokka_target_version}</version>
+        <executions>
+          <execution>
+            <phase>pre-site</phase>
+            <goals>
+              <goal>dokka</goal>
+            </goals>
+          </execution>
+        </executions>
+        <configuration>
+          <dokkaPlugins>
+            <plugin>
               <groupId>org.jetbrains.dokka</groupId>
-              <artifactId>dokka-maven-plugin</artifactId>
-              <version>${dokka.version}</version>
-              <executions>
-                  <execution>
-                      <phase>pre-site</phase>
-                      <goals>
-                          <goal>dokka</goal>
-                      </goals>
-                  </execution>
-              </executions>
-              <configuration>
-                  <dokkaPlugins>
-                      <plugin>
-                          <groupId>org.jetbrains.dokka</groupId>
-                          <artifactId>kotlin-as-java-plugin</artifactId>
-                          <version>${dokka.version}</version>
-                      </plugin>
-                  </dokkaPlugins>
-              </configuration>
-          </plugin>
-      </plugins>
+              <artifactId>kotlin-as-java-plugin</artifactId>
+              <version>${dokka_target_version}</version>
+            </plugin>
+          </dokkaPlugins>
+        </configuration>
+      </plugin>
+    </plugins>
   </build>
 </project>

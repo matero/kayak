@@ -16,7 +16,8 @@ private object Valid : Validated<Unit> {
     get() = throw IllegalStateException("Validation was successful, no failure detected")
 }
 
-fun <T> validate(v1: Pair<String, Validated<*>>, v2: Pair<String, Validated<*>>): Validated<T> {
+
+@Suppress("UNCHECKED_CAST") fun <T> validate(v1: Pair<String, Validated<*>>, v2: Pair<String, Validated<*>>): Validated<T> {
   return if (v1.second.ok) {
     if (v2.second.ok) {
       Valid as Validated<T>
@@ -32,7 +33,7 @@ fun <T> validate(v1: Pair<String, Validated<*>>, v2: Pair<String, Validated<*>>)
   }
 }
 
-fun <T> validate(vararg validations: Pair<String, Validated<*>>): Validated<T> {
+@Suppress("UNCHECKED_CAST") fun <T> validate(vararg validations: Pair<String, Validated<*>>): Validated<T> {
   return when (validations.size) {
     0 -> Valid as Validated<T>
     1 -> if (validations[0].second.ok) Valid as Validated<T> else UnsuccessfulValidation(validations[0].second.failure)
@@ -45,7 +46,7 @@ fun <T> validate(validations: Iterable<Pair<String, Validated<*>>>): Validated<T
   return validate(validations.filter { it.second.failed })
 }
 
-fun <T> validate(validations: List<Pair<String, Validated<*>>>): Validated<T> {
+@Suppress("UNCHECKED_CAST") fun <T> validate(validations: List<Pair<String, Validated<*>>>): Validated<T> {
   return when (validations.size) {
     0 -> Valid as Validated<T>
     1 -> if (validations[0].second.ok) Valid as Validated<T> else UnsuccessfulValidation(validations[0].second.failure)
@@ -61,7 +62,7 @@ fun <T> validate(validations: List<Pair<String, Validated<*>>>): Validated<T> {
   }
 }
 
-fun <T> validate(validations: Map<String, Validated<*>>): Validated<T> {
+@Suppress("UNCHECKED_CAST") fun <T> validate(validations: Map<String, Validated<*>>): Validated<T> {
   return if (validations.isEmpty())
     Valid as Validated<T>
   else

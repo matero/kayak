@@ -10,11 +10,11 @@ sealed class JsonWriter {
   /**
    * Streams the specified `JsonNode` formatted to the specified `Writer`.
    *
-   * @param to the `Writer` to output to.
+   * @param toWriter the `Writer` to output to.
    * @param node the `JsonNode` to output.
    * @throws IOException if there was a problem writing to the `Writer`.
    */
-  abstract fun write(to: Writer, node: JsonNode)
+  abstract fun write(toWriter: Writer, node: Json)
 
   companion object {
     internal fun write(toWriter: Writer, text: String) {

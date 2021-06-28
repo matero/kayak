@@ -1,36 +1,37 @@
 package kayak.web
 
-import jakarta.servlet.ServletException
-import jakarta.servlet.http.HttpServletRequest
-import jakarta.servlet.http.HttpServletResponse
-import java.io.BufferedReader
+import kayak.json.Json
 
-abstract class HttpControllerServlet : HttpRouterServlet() {
-  protected operator fun HttpServletRequest.get(attributeName: String): Any? = this.getAttribute(attributeName)
+abstract class HttpControllerServlet() : HttpRouterServlet() {
 
-  protected operator fun <T> HttpServletRequest.get(parameter: PathParameter<T>) = parameter.loadFrom(this)
+  protected operator fun Request.get(attributeName: String): Any? = this.getAttribute(attributeName)
 
-  protected val HttpServletRequest.body: String
-    get() = reader.use(BufferedReader::readText)
+  protected operator fun <T> Request.get(parameter: PathParameter<T>) = parameter.loadFrom(this)
 
-  protected fun HttpServletResponse.unprocessableEntity() = sendError(422)
+  protected val Request.body: String
+    get() = reader.use(java.io.BufferedReader::readText)
 
-  protected fun HttpServletResponse.notFound() = sendError(HttpServletResponse.SC_NOT_FOUND)
+  protected val Request.jsonBody: Json
+    get() = Json.parse(reader)
+
+  protected fun Response.unprocessableEntity() = sendError(422)
+
+  protected fun Response.notFound() = sendError(Response.SC_NOT_FOUND)
 
   /* contents updaters */
-  protected fun HttpServletResponse.writeHtml(content: CharSequence) {
+  protected fun Response.writeHtml(content: CharSequence) {
     contentType = "text/html"
-    send(content)
+    send(this, content)
   }
 
-  protected fun HttpServletResponse.writeText(content: CharSequence) {
+  protected fun Response.writeText(content: CharSequence) {
     contentType = "text/plain"
-    send(content)
+    send(this, content)
   }
 
-  protected fun HttpServletResponse.writeJson(content: CharSequence) {
+  protected fun Response.writeJson(content: CharSequence) {
     contentType = "application/json"
-    send(content)
+    send(this, content)
   }
 
   /**
@@ -42,19 +43,19 @@ abstract class HttpControllerServlet : HttpRouterServlet() {
    * @param content the content to write into the response.
    * @throws ServletException if the response is already committed.
    */
-  protected fun HttpServletResponse.send(content: CharSequence) {
-    if (isCommitted) {
-      throw ServletException("The response has already been committed")
+  protected open fun send(response: Response, content: CharSequence) {
+    if (response.isCommitted) {
+      throw jakarta.servlet.ServletException("The response has already been committed")
     }
-    commit(content.toString())
+    commit(response, content.toString())
   }
 
-  protected fun HttpServletResponse.commit(content: String) {
-    if (contentType == null) {
-      contentType = "text/html"
+  protected open fun commit(response: Response, content: String) {
+    if (response.contentType == null) {
+      response.contentType = "text/html"
     }
-    setContentLength(content.toByteArray().size)
-    writer.append(content)
-    status = HttpServletResponse.SC_OK
+    response.setContentLength(content.toByteArray().size)
+    response.writer.append(content)
+    response.status = Response.SC_OK
   }
 }

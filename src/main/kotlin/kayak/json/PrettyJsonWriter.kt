@@ -6,19 +6,20 @@ import java.io.Writer
  * JsonWriter that writes JSON in a human-readable form.  Instances of this class can safely be shared between threads.
  */
 class PrettyJsonWriter(private val lineSeparator: String = DEFAULT_LINE_SEPARATOR) : JsonWriter() {
-  override fun write(toWriter: Writer, node: JsonNode) {
+  override fun write(toWriter: Writer, node: Json) {
     write(toWriter, node, indent = 0)
   }
 
-  private fun write(toWriter: Writer, node: JsonNode, indent: Int) {
+  private fun write(toWriter: Writer, node: Json, indent: Int) {
     when (node) {
       is ArrayNode -> writeArrayNode(toWriter, node.asArray(), indent)
       is ObjectNode -> writeObjectNode(toWriter, node.asObject(), indent)
-      is StringNode -> write(toWriter, node.asString())
+      is StringValue -> write(toWriter, node.asString())
       is NumberNode -> writeNumber(toWriter, node.asNumber().toCharArray())
       is BooleanNode -> toWriter.write(node.toString())
       is NullNode -> toWriter.write("null")
-      is UndefinedJsonNode -> throw IllegalStateException("undefined nodes are not writeable")
+      is UndefinedJson -> throw IllegalStateException("undefined nodes are not writeable")
+      is IllegalJson -> throw IllegalStateException("illegal nodes are not writeable")
     }
   }
 
@@ -29,7 +30,7 @@ class PrettyJsonWriter(private val lineSeparator: String = DEFAULT_LINE_SEPARATO
     toWriter.write(number, offset, length)
   }
 
-  private fun writeArrayNode(toWriter: Writer, arrayElements: List<JsonNode>, indent: Int) {
+  private fun writeArrayNode(toWriter: Writer, arrayElements: List<Json>, indent: Int) {
     if (arrayElements.isEmpty()) {
       toWriter.write("[]")
     } else {
@@ -51,7 +52,7 @@ class PrettyJsonWriter(private val lineSeparator: String = DEFAULT_LINE_SEPARATO
     }
   }
 
-  private fun writeObjectNode(toWriter: Writer, objectFields: Map<StringNode, JsonNode>, indent: Int) {
+  private fun writeObjectNode(toWriter: Writer, objectFields: Map<StringValue, Json>, indent: Int) {
     if (objectFields.isEmpty()) {
       toWriter.write("{}")
     } else {
@@ -68,7 +69,7 @@ class PrettyJsonWriter(private val lineSeparator: String = DEFAULT_LINE_SEPARATO
     }
   }
 
-  private fun writeField(toWriter: Writer, field: Map.Entry<StringNode, JsonNode>, indent: Int) {
+  private fun writeField(toWriter: Writer, field: Map.Entry<StringValue, Json>, indent: Int) {
     toWriter.write(lineSeparator)
     addTabs(toWriter, indent + 1)
     write(toWriter, field.key.asString())
