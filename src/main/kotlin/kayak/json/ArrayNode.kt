@@ -14,6 +14,10 @@ value class ArrayNode private constructor(private val elements: List<Json>) : Js
 
   override fun asBoolean() = throw IllegalJsonInterpretation("Json node is array")
 
+  override fun isTrue() = throw IllegalJsonInterpretation("Json node is array")
+
+  override fun isFalse() = throw IllegalJsonInterpretation("Json node is array")
+
   override fun asBooleanOrElse(defaultTo: Boolean) = throw IllegalJsonInterpretation("Json node is array")
 
   override fun asNullableBoolean() = throw IllegalJsonInterpretation("Json node is array")

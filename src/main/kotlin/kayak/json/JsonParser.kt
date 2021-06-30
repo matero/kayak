@@ -1,7 +1,6 @@
 package kayak.json
 
-import java.io.InputStream
-import java.io.InputStreamReader
+import kayak.KayakFailure
 import java.io.Reader
 import java.io.StringReader
 
@@ -54,7 +53,6 @@ internal class JsonParser(private val input: Reader, private val buffer: CharArr
    * Characters are read in chunks into a default-sized input buffer. Hence, wrapping a reader in an
    * additional `BufferedReader` likely won't improve reading performance.
    *
-   * @throws IOException if an I/O error occurs in the reader
    * @throws IllegalJsonSyntax if the input is not valid JSON
    */
   fun parse(): Json {
@@ -359,9 +357,12 @@ internal class JsonParser(private val input: Reader, private val buffer: CharArr
     return IllegalJsonSyntax(message, location())
   }
 
+  class IllegalJsonSyntax internal constructor(message: String, location: Location) : KayakFailure("${location}: $message")
+
   companion object {
     private const val MAX_NESTING_LEVEL: Int = 1000
     private const val MIN_BUFFER_CAPACITY: Int = 10
+    private val START = Location(offset = 0, line = 1, column = 1)
     const val DEFAULT_BUFFER_CAPACITY: Int = 1024
 
     /**
@@ -373,21 +374,23 @@ internal class JsonParser(private val input: Reader, private val buffer: CharArr
      * @throws IllegalJsonSyntax
      * if the input is not valid JSON
      */
-    fun parse(input: String): Json = JsonParser(StringReader(input), bufferFor(input)).parse()
-
-    fun parse(input: InputStream, desiredBufferCapacity: Int = DEFAULT_BUFFER_CAPACITY) = parse(InputStreamReader(input), desiredBufferCapacity)
-
-    fun parse(input: Reader, desiredBufferCapacity: Int = DEFAULT_BUFFER_CAPACITY): Json {
-      if (desiredBufferCapacity <= 0) {
-        throw IllegalArgumentException("bufferCapacity is zero or negative")
+    fun of(input: String, desiredBufferCapacity: Int): JsonParser {
+      if (input.isEmpty() || input.isBlank()) {
+        // simulates parsing, avoid reader and buffer creation
+        throw IllegalJsonSyntax("Unexpected end of input", START)
       }
-      val bufferCapacity: Int = MIN_BUFFER_CAPACITY.coerceAtLeast(DEFAULT_BUFFER_CAPACITY.coerceAtMost(desiredBufferCapacity))
-      return JsonParser(input, CharArray(bufferCapacity)).parse()
+      return JsonParser(StringReader(input), bufferWith(desiredBufferCapacity))
     }
 
-    private fun bufferFor(input: String): CharArray {
-      val bufferCapacity: Int = MIN_BUFFER_CAPACITY.coerceAtLeast(DEFAULT_BUFFER_CAPACITY.coerceAtMost(input.length))
-      return CharArray(bufferCapacity)
+    fun of(input: Reader, desiredBufferCapacity: Int) = JsonParser(input, bufferWith(desiredBufferCapacity))
+
+    private fun bufferWith(desiredBufferCapacity: Int) = CharArray(coerceBufferCapacity(desiredBufferCapacity))
+
+    private fun coerceBufferCapacity(bufferCapacity: Int): Int {
+      if (bufferCapacity <= 0) {
+        throw IllegalArgumentException("buffer capacity must be greater than zero")
+      }
+      return MIN_BUFFER_CAPACITY.coerceAtLeast(DEFAULT_BUFFER_CAPACITY.coerceAtMost(bufferCapacity))
     }
 
     private fun isWhitespace(ch: Int): Boolean = (Character.isWhitespace(ch) || Character.isSpaceChar(ch))

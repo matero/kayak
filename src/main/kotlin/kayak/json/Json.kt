@@ -30,7 +30,7 @@ sealed interface Json {
   fun isUndefined(): Boolean = false
 
   /**@return `true` if the node represents a defined JSON node, `false` other way*/
-  fun isNode(): Boolean = true
+  fun isDefined(): Boolean = true
 
   /**@return `true` if the node represents a JSON `null`, `false` other way*/
   fun isNull(): Boolean = false
@@ -43,6 +43,8 @@ sealed interface Json {
    * @throws IllegalJsonInterpretation if the node is not a JSON boolean.
    */
   fun asBoolean(): Boolean
+  fun isTrue(): Boolean
+  fun isFalse(): Boolean
 
   /**
    * @param defaultTo default value to provide when no value exists.
@@ -182,16 +184,16 @@ sealed interface Json {
   operator fun get(fieldName: StringValue): Json = IllegalJson
 
   companion object {
-    fun parse(input: String): Json = JsonParser.parse(input)
+    fun parse(input: String, desiredBufferCapacity: Int = input.length): Json = JsonParser.of(input, desiredBufferCapacity).parse()
 
     fun parse(request: kayak.web.Request, desiredBufferCapacity: Int = JsonParser.DEFAULT_BUFFER_CAPACITY): Json =
-      JsonParser.parse(request.reader, desiredBufferCapacity)
+      JsonParser.of(request.reader, desiredBufferCapacity).parse()
 
     fun parse(input: java.io.InputStream, desiredBufferCapacity: Int = JsonParser.DEFAULT_BUFFER_CAPACITY): Json =
-      JsonParser.parse(input, desiredBufferCapacity)
+      JsonParser.of(java.io.InputStreamReader(input), desiredBufferCapacity).parse()
 
     fun parse(input: java.io.Reader, desiredBufferCapacity: Int = JsonParser.DEFAULT_BUFFER_CAPACITY): Json =
-      JsonParser.parse(input, desiredBufferCapacity)
+      JsonParser.of(input, desiredBufferCapacity).parse()
   }
 }
 
@@ -199,6 +201,9 @@ internal object IllegalJson : Json {
   override fun isUndefined() = throw IllegalJsonInterpretation("ILLEGAL Json")
 
   override fun asBoolean() = throw IllegalJsonInterpretation("ILLEGAL Json")
+  override fun isTrue() = throw IllegalJsonInterpretation("ILLEGAL Json")
+
+  override fun isFalse() = throw IllegalJsonInterpretation("ILLEGAL Json")
 
   override fun asBooleanOrElse(defaultTo: Boolean) = throw IllegalJsonInterpretation("ILLEGAL Json")
 
@@ -265,6 +270,9 @@ internal object UndefinedJson : Json {
   override fun isUndefined() = true
 
   override fun asBoolean() = throw IllegalJsonInterpretation("Json node is undefined")
+  override fun isTrue() = throw IllegalJsonInterpretation("Json node is undefined")
+
+  override fun isFalse() = throw IllegalJsonInterpretation("Json node is undefined")
 
   override fun asBooleanOrElse(defaultTo: Boolean) = defaultTo
 
@@ -333,6 +341,10 @@ object NullNode : Json {
   override fun isNullableBoolean() = true
 
   override fun asBoolean() = throw IllegalJsonInterpretation("Json node is null")
+
+  override fun isTrue() = throw IllegalJsonInterpretation("Json node is null")
+
+  override fun isFalse() = throw IllegalJsonInterpretation("Json node is null")
 
   override fun asNullableBoolean(): Boolean? = null
 
@@ -407,12 +419,16 @@ enum class BooleanNode : Json {
   TRUE {
     override fun toString() = "true"
     override fun asBoolean() = true
+    override fun isTrue() = true
+    override fun isFalse() = false
     override fun asBooleanOrElse(defaultTo: Boolean) = true
     override fun asNullableBoolean() = true
   },
   FALSE {
     override fun toString() = "false"
     override fun asBoolean() = false
+    override fun isTrue() = false
+    override fun isFalse() = true
     override fun asBooleanOrElse(defaultTo: Boolean) = false
     override fun asNullableBoolean() = false
   };
@@ -527,6 +543,10 @@ value class NumberNode private constructor(private val value: String) : Json {
   override fun toString() = "NumberNode{value='$value'}"
 
   override fun asBoolean() = throw IllegalJsonInterpretation("Json node is number")
+
+  override fun isTrue() = throw IllegalJsonInterpretation("Json node is number")
+
+  override fun isFalse() = throw IllegalJsonInterpretation("Json node is number")
 
   override fun asNullableBoolean() = throw IllegalJsonInterpretation("Json node is number")
 
@@ -649,6 +669,10 @@ value class StringValue private constructor(private val value: String) : Json, C
   override fun asNullableString() = value
 
   override fun asBoolean() = throw IllegalJsonInterpretation("Json node is string")
+
+  override fun isTrue() = throw IllegalJsonInterpretation("Json node is string")
+
+  override fun isFalse() = throw IllegalJsonInterpretation("Json node is string")
 
   override fun asNullableBoolean() = throw IllegalJsonInterpretation("Json node is string")
 

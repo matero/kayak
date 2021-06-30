@@ -17,6 +17,10 @@ value class ObjectNode(private val fields: Map<StringValue, Json>) : Json {
 
   override fun asBoolean() = throw IllegalJsonInterpretation("Json node is object")
 
+  override fun isTrue() = throw IllegalJsonInterpretation("Json node is object")
+
+  override fun isFalse() = throw IllegalJsonInterpretation("Json node is object")
+
   override fun asBooleanOrElse(defaultTo: Boolean) = throw IllegalJsonInterpretation("Json node is object")
 
   override fun asNullableBoolean() = throw IllegalJsonInterpretation("Json node is object")
