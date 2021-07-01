@@ -1,11 +1,14 @@
 package kayak.web
 
-import jakarta.servlet.ServletException
 import java.io.IOException
 import java.util.regex.Pattern
-import kotlin.collections.ArrayList
 
 abstract class HttpRouterServlet : jakarta.servlet.http.HttpServlet() {
+
+  protected fun Request.isIndex() = IndexPath.matches(this)
+
+  protected fun Request.matches(path: Path) = path.matches(this)
+
   protected open fun notAuthorized(response: Response) {
     response.status = Response.SC_FORBIDDEN
   }
@@ -130,81 +133,81 @@ abstract class HttpRouterServlet : jakarta.servlet.http.HttpServlet() {
     if (lastModified >= 0) response.setDateHeader("Last-Modified", lastModified)
   }
 
+  protected sealed interface Path {
+    fun matches(request: Request): Boolean
+  }
+
+  /** Path that represents the INDEX or ROOT path `"/"`.  */
+  object IndexPath : Path {
+    override fun matches(request: Request): Boolean {
+      val pathInfo = request.pathInfo
+      return null == pathInfo || pathInfo.isEmpty() || "/" == pathInfo
+    }
+
+    override fun toString(): String {
+      return "Path('/')"
+    }
+  }
+
+  @JvmInline
+  internal value class StaticPath constructor(private val value: String) : Path {
+    override fun toString() = "Path('$value')"
+
+    override fun matches(request: Request) = value == request.pathInfo
+  }
+
+  internal class ParameterizedPath constructor(
+    private val uri: String,
+    private val regex: Pattern,
+    private val parameters: Array<String>
+  ) : Path {
+    override fun toString() = "Path('$uri')"
+
+    override fun hashCode() = uri.hashCode()
+
+    override fun equals(other: Any?) = (this === other) || (if (other is ParameterizedPath) uri == other.uri else false)
+
+
+    override fun matches(request: Request): Boolean {
+      if (!IndexPath.matches(request)) {
+        val matcher = regex.matcher(request.pathInfo)
+        if (matcher.matches()) {
+          for (parameter in parameters) {
+            val group = matcher.group(parameter)
+            request.setAttribute(parameter, group)
+          }
+          return true
+        }
+      }
+      return false
+    }
+  }
+
+  protected fun path(value: String): Path {
+    if (value.isEmpty() || "/" == value) {
+      return IndexPath
+    }
+
+    val matcher = pathVariable.matcher(value)
+    return if (matcher.find()) {
+      val parameters = ArrayList<String>(2)
+      val parameterizedUri = StringBuilder()
+      do {
+        val parameter = matcher.group(1)
+        val parameterRegEx = "(?<$parameter>[^/]+)"
+        matcher.appendReplacement(parameterizedUri, parameterRegEx)
+        parameters.add(parameter)
+      } while (matcher.find())
+      ParameterizedPath(value, Pattern.compile(parameterizedUri.toString()), parameters.toTypedArray())
+    } else {
+      StaticPath(value)
+    }
+  }
+
   companion object {
     private val localizedMessages = java.util.ResourceBundle.getBundle("jakarta.servlet.http.LocalStrings")
 
     private val pathVariable = Pattern.compile("\\{(\\w+)}")
-
-    protected sealed interface Path {
-      fun matches(request: Request): Boolean
-    }
-
-    /** Path that represents the INDEX or ROOT path `"/"`.  */
-    object IndexPath : Path {
-      override fun matches(request: Request): Boolean {
-        val pathInfo = request.pathInfo
-        return null == pathInfo || pathInfo.isEmpty() || "/" == pathInfo
-      }
-
-      override fun toString(): String {
-        return "Path('/')"
-      }
-    }
-
-    @JvmInline
-    internal value class StaticPath constructor(private val value: String) : Path {
-      override fun toString() = "Path('$value')"
-
-      override fun matches(request: Request) = value == request.pathInfo
-    }
-
-    internal class ParameterizedPath constructor(
-      private val uri: String,
-      private val regex: Pattern,
-      private val parameters: Array<String>
-    ) : Path {
-      override fun toString() = "Path('$uri')"
-
-      override fun hashCode() = uri.hashCode()
-
-      override fun equals(other: Any?) = (this === other) || (if (other is ParameterizedPath) uri == other.uri else false)
-
-
-      override fun matches(request: Request): Boolean {
-        if (!IndexPath.matches(request)) {
-          val matcher = regex.matcher(request.pathInfo)
-          if (matcher.matches()) {
-            for (parameter in parameters) {
-              val group = matcher.group(parameter)
-              request.setAttribute(parameter, group)
-            }
-            return true
-          }
-        }
-        return false
-      }
-    }
-
-    protected fun path(value: String): Path {
-      if (value.isEmpty() || "/" == value) {
-        return IndexPath
-      }
-
-      val matcher = pathVariable.matcher(value)
-      return if (matcher.find()) {
-        val parameters = ArrayList<String>(2)
-        val parameterizedUri = StringBuilder()
-        do {
-          val parameter = matcher.group(1)
-          val parameterRegEx = "(?<$parameter>[^/]+)"
-          matcher.appendReplacement(parameterizedUri, parameterRegEx)
-          parameters.add(parameter)
-        } while (matcher.find())
-        ParameterizedPath(value, Pattern.compile(parameterizedUri.toString()), parameters.toTypedArray())
-      } else {
-        StaticPath(value)
-      }
-    }
 
     private fun localizedMessage(key: String): String = localizedMessages.getString(key)
 
