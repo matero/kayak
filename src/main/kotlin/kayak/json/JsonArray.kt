@@ -1,7 +1,7 @@
 package kayak.json
 
 @JvmInline
-value class ArrayNode private constructor(private val elements: List<Json>) : Json {
+value class JsonArray private constructor(private val elements: List<Json>) : Json {
   override fun isArray() = true
 
   override fun asArray(): List<Json> = elements
@@ -68,7 +68,7 @@ value class ArrayNode private constructor(private val elements: List<Json>) : Js
 
   override fun asObject() = throw IllegalJsonInterpretation("Json node is array")
 
-  override fun asObjectOrElse(defaultTo: Map<StringValue, Json>) = throw IllegalJsonInterpretation("Json node is array")
+  override fun asObjectOrElse(defaultTo: Map<JsonString, Json>) = throw IllegalJsonInterpretation("Json node is array")
 
   override fun asNullableObject() = throw IllegalJsonInterpretation("Json node is array")
 
@@ -77,26 +77,24 @@ value class ArrayNode private constructor(private val elements: List<Json>) : Js
   }
 
   companion object {
-    private val EMPTY_ARRAY = ArrayNode(emptyList())
+    private val EMPTY_ARRAY = JsonArray(emptyList())
 
-    operator fun invoke() = EMPTY_ARRAY
-
-    operator fun invoke(elements: Iterator<Json>) =
-      if (elements.hasNext())
-        invoke(elements.asSequence().toList())
-      else
+    fun of(elements: Iterator<Json>) =
+      if (elements.hasNext()) {
+        of(elements.asSequence().toList())
+      } else
         EMPTY_ARRAY
 
-    operator fun invoke(elements: Iterable<Json>): ArrayNode =
+    fun of(elements: Iterable<Json>): JsonArray =
       when (elements) {
-        is List<Json> -> invoke(elements)
-        is Collection<Json> -> if (elements.isEmpty()) EMPTY_ARRAY else ArrayNode(elements.toList())
-        else -> invoke(elements.toList())
+        is List<Json> -> of(elements)
+        is Collection<Json> -> if (elements.isEmpty()) EMPTY_ARRAY else JsonArray(elements.toList())
+        else -> of(elements.toList())
       }
 
-    operator fun invoke(vararg elements: Json) = invoke(listOf(*elements))
+    fun of(vararg elements: Json) = of(listOf(*elements))
 
-    operator fun invoke(elementList: List<Json>) =
-      if (elementList.isEmpty()) EMPTY_ARRAY else ArrayNode(elementList.toList())
+    fun of(elements: List<Json>) =
+      if (elements.isEmpty()) EMPTY_ARRAY else JsonArray(elements.toList())
   }
 }

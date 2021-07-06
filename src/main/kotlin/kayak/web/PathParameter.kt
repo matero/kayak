@@ -17,25 +17,25 @@ abstract class PathParameter<T>(private val name: String) {
 class IntPathParameter(named: String) : PathParameter<Int>(named) {
   override fun loadFrom(request: HttpServletRequest) =
     when (val value = read(request)) {
-      is Int -> SuccessfulValidation(value)
+      is Int -> SuccessfulValidation.of(value)
       is String -> try {
-        SuccessfulValidation(value.toInt())
+        SuccessfulValidation.of(value.toInt())
       } catch (e: NumberFormatException) {
-        UnsuccessfulValidation(e)
+        UnsuccessfulValidation.of(e)
       }
-      else -> UnsuccessfulValidation("can not interpret value: '$value'")
+      else -> UnsuccessfulValidation.of("can not interpret value: '$value'")
     }
 }
 
 class LongPathParameter(named: String) : PathParameter<Long>(named) {
   override fun loadFrom(request: HttpServletRequest) =
     when (val value = read(request)) {
-      is Long -> SuccessfulValidation(value)
+      is Long -> SuccessfulValidation.of(value)
       is String -> try {
-        SuccessfulValidation(value.toLong())
+        SuccessfulValidation.of(value.toLong())
       } catch (e: NumberFormatException) {
-        UnsuccessfulValidation(e)
+        UnsuccessfulValidation.of(e)
       }
-      else -> UnsuccessfulValidation("can not interpret value: '$value'")
+      else -> UnsuccessfulValidation.of("can not interpret value: '$value'")
     }
 }

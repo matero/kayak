@@ -1,7 +1,5 @@
 package kayak
 
-import java.util.logging.Level
-
 object AppPort {
   private const val DEFAULT_HTTP_PORT = 8080
 
@@ -16,17 +14,15 @@ object AppPort {
    * @return the port to be used to serve the application.
    */
   private fun readConfiguration(): Int {
-    val log = java.util.logging.Logger.getLogger("kayak.AppPort")
+    val log = org.slf4j.LoggerFactory.getLogger("kayak.AppPort")
     val value = System.getenv("PORT")
 
     if (value == null || value.isEmpty()) {
-      if (log.isLoggable(Level.WARNING))
-        log.warning("No PORT definition found, serving application on '$DEFAULT_HTTP_PORT'")
+      log.warn("No PORT definition found, serving application on '{}'", DEFAULT_HTTP_PORT)
       return DEFAULT_HTTP_PORT
     }
 
-    if (log.isLoggable(Level.FINER))
-      log.finer("PORT definition found, trying to use PORT='$value'")
+    log.trace("PORT definition found, trying to use PORT='{}'", value)
 
     val port = try {
       value.toInt()
@@ -37,8 +33,7 @@ object AppPort {
       throw KayakConfigurationFailure("PORT should be a positive integer, but it is configured as '$value'")
     }
 
-    if (log.isLoggable(Level.INFO))
-      log.info("PORT definition found, serving application on '$port'")
+    log.info("PORT definition found, serving application on '{}'", port)
     return port
   }
 }

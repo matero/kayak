@@ -8,13 +8,13 @@ import java.io.Writer
 object CompactJsonWriter : JsonWriter() {
   override fun write(toWriter: Writer, node: Json) {
     when (node) {
-      is ArrayNode -> writeArrayNode(toWriter, node.asArray())
-      is ObjectNode -> writeObjectNode(toWriter, node.asObject())
-      is StringValue -> write(toWriter, node.asString())
-      is NumberNode -> write(toWriter, node.asNumber())
-      is BooleanNode -> toWriter.write(node.toString())
-      is NullNode -> toWriter.write("null")
-      is UndefinedJson -> throw IllegalStateException("undefined nodes are not writeable")
+      is JsonArray -> writeArrayNode(toWriter, node.asArray())
+      is JsonObject -> writeObjectNode(toWriter, node.asObject())
+      is JsonString -> write(toWriter, node.asString())
+      is JsonNumber -> write(toWriter, node.asNumber())
+      is JsonBoolean -> toWriter.write(node.toString())
+      is JsonNull -> toWriter.write("null")
+      is JsonUndefined -> throw IllegalStateException("undefined nodes are not writeable")
       is IllegalJson -> throw IllegalStateException("illegal nodes are not writeable")
     }
   }
@@ -35,7 +35,7 @@ object CompactJsonWriter : JsonWriter() {
     }
   }
 
-  private fun writeObjectNode(toWriter: Writer, fields: Map<StringValue, Json>) {
+  private fun writeObjectNode(toWriter: Writer, fields: Map<JsonString, Json>) {
     if (fields.isEmpty()) {
       toWriter.write("{}")
     } else {
@@ -50,7 +50,7 @@ object CompactJsonWriter : JsonWriter() {
     }
   }
 
-  private fun writeField(toWriter: Writer, field: Map.Entry<StringValue, Json>) {
+  private fun writeField(toWriter: Writer, field: Map.Entry<JsonString, Json>) {
     write(toWriter, field.key.asString())
     toWriter.write(':'.code)
     write(toWriter, field.value)

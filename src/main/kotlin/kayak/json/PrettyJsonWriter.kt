@@ -12,13 +12,13 @@ class PrettyJsonWriter(private val lineSeparator: String = DEFAULT_LINE_SEPARATO
 
   private fun write(toWriter: Writer, node: Json, indent: Int) {
     when (node) {
-      is ArrayNode -> writeArrayNode(toWriter, node.asArray(), indent)
-      is ObjectNode -> writeObjectNode(toWriter, node.asObject(), indent)
-      is StringValue -> write(toWriter, node.asString())
-      is NumberNode -> writeNumber(toWriter, node.asNumber().toCharArray())
-      is BooleanNode -> toWriter.write(node.toString())
-      is NullNode -> toWriter.write("null")
-      is UndefinedJson -> throw IllegalStateException("undefined nodes are not writeable")
+      is JsonArray -> writeArrayNode(toWriter, node.asArray(), indent)
+      is JsonObject -> writeObjectNode(toWriter, node.asObject(), indent)
+      is JsonString -> write(toWriter, node.asString())
+      is JsonNumber -> writeNumber(toWriter, node.asNumber().toCharArray())
+      is JsonBoolean -> toWriter.write(node.toString())
+      is JsonNull -> toWriter.write("null")
+      is JsonUndefined -> throw IllegalStateException("undefined nodes are not writeable")
       is IllegalJson -> throw IllegalStateException("illegal nodes are not writeable")
     }
   }
@@ -52,7 +52,7 @@ class PrettyJsonWriter(private val lineSeparator: String = DEFAULT_LINE_SEPARATO
     }
   }
 
-  private fun writeObjectNode(toWriter: Writer, objectFields: Map<StringValue, Json>, indent: Int) {
+  private fun writeObjectNode(toWriter: Writer, objectFields: Map<JsonString, Json>, indent: Int) {
     if (objectFields.isEmpty()) {
       toWriter.write("{}")
     } else {
@@ -69,7 +69,7 @@ class PrettyJsonWriter(private val lineSeparator: String = DEFAULT_LINE_SEPARATO
     }
   }
 
-  private fun writeField(toWriter: Writer, field: Map.Entry<StringValue, Json>, indent: Int) {
+  private fun writeField(toWriter: Writer, field: Map.Entry<JsonString, Json>, indent: Int) {
     toWriter.write(lineSeparator)
     addTabs(toWriter, indent + 1)
     write(toWriter, field.key.asString())

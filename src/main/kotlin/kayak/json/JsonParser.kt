@@ -108,29 +108,29 @@ internal class JsonParser(private val input: Reader, private val buffer: CharArr
     }
   }
 
-  private fun readNull(): NullNode {
+  private fun readNull(): JsonNull {
     read()
     readRequiredChar('u')
     readRequiredChar('l')
     readRequiredChar('l')
-    return NullNode
+    return JsonNull
   }
 
-  private fun readTrue(): BooleanNode {
+  private fun readTrue(): JsonBoolean {
     read()
     readRequiredChar('r')
     readRequiredChar('u')
     readRequiredChar('e')
-    return BooleanNode.TRUE
+    return JsonBoolean.TRUE
   }
 
-  private fun readFalse(): BooleanNode {
+  private fun readFalse(): JsonBoolean {
     read()
     readRequiredChar('a')
     readRequiredChar('l')
     readRequiredChar('s')
     readRequiredChar('e')
-    return BooleanNode.FALSE
+    return JsonBoolean.FALSE
   }
 
   private fun readRequiredChar(ch: Char) {
@@ -139,8 +139,8 @@ internal class JsonParser(private val input: Reader, private val buffer: CharArr
     }
   }
 
-  private fun readString(): StringValue {
-    return StringValue(readStringInternal())
+  private fun readString(): JsonString {
+    return JsonString.of(readStringInternal())
   }
 
   private fun readArray(): Json {
@@ -152,7 +152,7 @@ internal class JsonParser(private val input: Reader, private val buffer: CharArr
     skipWhiteSpace()
     if (readChar(']')) {
       nestingLevel--
-      return ArrayNode()
+      return JsonArray.of()
     }
 
     val elements = ArrayList<Json>(5)
@@ -165,7 +165,7 @@ internal class JsonParser(private val input: Reader, private val buffer: CharArr
       throw expected("',' or ']'")
     }
     nestingLevel--
-    return ArrayNode(elements)
+    return JsonArray.of(elements)
   }
 
   private fun readObject(): Json {
@@ -177,10 +177,10 @@ internal class JsonParser(private val input: Reader, private val buffer: CharArr
     skipWhiteSpace()
     if (readChar('}')) {
       nestingLevel--
-      return ObjectNode()
+      return JsonObject.of()
     }
 
-    val properties = LinkedHashMap<StringValue, Json>()
+    val properties = LinkedHashMap<JsonString, Json>()
     do {
       skipWhiteSpace()
       val name = readName()
@@ -198,14 +198,14 @@ internal class JsonParser(private val input: Reader, private val buffer: CharArr
     }
     nestingLevel--
 
-    return ObjectNode(properties)
+    return JsonObject(properties)
   }
 
-  private fun readName(): StringValue {
+  private fun readName(): JsonString {
     if (current != '"'.code) {
       throw expected("name")
     }
-    return StringValue(readStringInternal())
+    return JsonString.of(readStringInternal())
   }
 
   private fun readStringInternal(): String {
@@ -258,7 +258,7 @@ internal class JsonParser(private val input: Reader, private val buffer: CharArr
     read()
   }
 
-  private fun readNumber(): NumberNode {
+  private fun readNumber(): JsonNumber {
     startCapture()
     readChar('-')
     val firstDigit = current
@@ -271,7 +271,7 @@ internal class JsonParser(private val input: Reader, private val buffer: CharArr
     }
     readFraction()
     readExponent()
-    return NumberNode(endCapture())
+    return JsonNumber.of(endCapture())
   }
 
   private fun readFraction(): Boolean {

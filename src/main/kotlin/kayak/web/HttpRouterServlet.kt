@@ -29,46 +29,10 @@ abstract class HttpRouterServlet : jakarta.servlet.http.HttpServlet() {
    * @see jakarta.servlet.Servlet.service
    */
   override fun service(request: Request, response: Response) {
-    when (request.method) {
-      "GET" -> {
-        val lastModified = getLastModified(request)
-        if (lastModified == -1L) {
-          // servlet doesn't support if-modified-since, no reason to go through further expensive logic
-          doGet(request, response)
-        } else {
-          val ifModifiedSince = request.getDateHeader("If-Modified-Since")
-          if (ifModifiedSince < lastModified) {
-            // If the servlet mod time is later, call doGet()
-            // Round down to the nearest second for a proper compare
-            // A ifModifiedSince of -1 will always be less
-            maybeSetLastModified(response, lastModified)
-            doGet(request, response)
-          } else {
-            response.status = Response.SC_NOT_MODIFIED
-          }
-        }
-      }
-      "HEAD" -> {
-        val lastModified = getLastModified(request)
-        maybeSetLastModified(response, lastModified)
-        doHead(request, response)
-      }
-      "POST" -> doPost(request, response)
-      "PUT" -> doPut(request, response)
-      "PATCH" -> doPatch(request, response)
-      "DELETE" -> doDelete(request, response)
-      "OPTIONS" -> doOptions(request, response)
-      "TRACE" -> doTrace(request, response)
-      else -> {
-        //
-        // Note that this means NO servlet supports whatever method was requested, anywhere on this server.
-        //
-        var errMsg = localizedMessage("http.method_not_implemented")
-        val errArgs = arrayOf(request.method)
-        errMsg = java.text.MessageFormat.format(errMsg, *errArgs)
-        response.sendError(Response.SC_NOT_IMPLEMENTED, errMsg)
-      }
-    }
+    if ("PATCH" == request.method)
+      doPatch(request, response)
+    else
+      super.service(request, response)
   }
 
   /**

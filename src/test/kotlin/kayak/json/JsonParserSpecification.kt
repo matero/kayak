@@ -95,17 +95,17 @@ class JsonParserSpecification : ShouldSpec({
       json.isNull() shouldBe false
       json.isArray() shouldBe true
       json.asArray() shouldBe listOf(
-        NumberNode("111"),
-        NumberNode("0.22"),
-        ArrayNode(BooleanNode.TRUE, BooleanNode.FALSE),
-        ObjectNode(StringValue("sara") to StringValue("catunga"))
+        JsonNumber.of("111"),
+        JsonNumber.of("0.22"),
+        JsonArray.of(JsonBoolean.TRUE, JsonBoolean.FALSE),
+        JsonObject.of(JsonString.of("sara") to JsonString.of("catunga"))
       )
       json.isNullableArray() shouldBe true
       json.asNullableArray() shouldBe listOf(
-        NumberNode("111"),
-        NumberNode("0.22"),
-        ArrayNode(BooleanNode.TRUE, BooleanNode.FALSE),
-        ObjectNode(StringValue("sara") to StringValue("catunga"))
+        JsonNumber.of("111"),
+        JsonNumber.of("0.22"),
+        JsonArray.of(JsonBoolean.TRUE, JsonBoolean.FALSE),
+        JsonObject.of(JsonString.of("sara") to JsonString.of("catunga"))
       )
     }
     should("recognize object json value") {
@@ -117,13 +117,13 @@ class JsonParserSpecification : ShouldSpec({
       json.isNull() shouldBe false
       json.isObject() shouldBe true
       json.asObject() shouldBe mapOf(
-        StringValue("sara") to StringValue("catunga"),
-        StringValue("flag") to BooleanNode.TRUE
+        JsonString.of("sara") to JsonString.of("catunga"),
+        JsonString.of("flag") to JsonBoolean.TRUE
       )
       json.isNullableObject() shouldBe true
       json.asNullableObject() shouldBe mapOf(
-        StringValue("sara") to StringValue("catunga"),
-        StringValue("flag") to BooleanNode.TRUE
+        JsonString.of("sara") to JsonString.of("catunga"),
+        JsonString.of("flag") to JsonBoolean.TRUE
       )
     }
   }

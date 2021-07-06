@@ -4,12 +4,12 @@ import java.math.BigDecimal
 import java.math.BigInteger
 
 @JvmInline
-value class ObjectNode(private val fields: Map<StringValue, Json>) : Json {
+value class JsonObject(private val fields: Map<JsonString, Json>) : Json {
   override fun isObject() = true
 
   override fun asObject() = fields
 
-  override fun asObjectOrElse(defaultTo: Map<StringValue, Json>) = fields
+  override fun asObjectOrElse(defaultTo: Map<JsonString, Json>) = fields
 
   override fun isNullableObject() = true
 
@@ -78,20 +78,45 @@ value class ObjectNode(private val fields: Map<StringValue, Json>) : Json {
   override fun toString() = "ObjectNode{fields=$fields}"
 
   companion object {
-    private val EMPTY_OBJECT: ObjectNode = ObjectNode(emptyMap())
+    private val EMPTY: JsonObject = JsonObject(emptyMap())
 
-    operator fun invoke(): ObjectNode = EMPTY_OBJECT
-
-    operator fun invoke(field: Pair<StringValue, Json>): ObjectNode = ObjectNode(mapOf(field))
-
-    operator fun invoke(vararg fields: Pair<StringValue, Json>): ObjectNode = if (fields.isEmpty()) EMPTY_OBJECT else ObjectNode(mapOf(*fields))
-
-    operator fun invoke(fields: Collection<Pair<StringValue, Json>>): ObjectNode = if (fields.isEmpty()) EMPTY_OBJECT else ObjectNode(fields.toMap())
-
-    operator fun invoke(fields: Map<StringValue, Json>): ObjectNode =
-      if (fields.isEmpty())
-        EMPTY_OBJECT
+    fun of(field: Pair<JsonString, Json>): JsonObject =
+      if (field.second.isUndefined())
+        EMPTY
       else
-        ObjectNode(fields.toMap())
+        JsonObject(mapOf(field))
+
+    fun of(vararg fields: Pair<JsonString, Json>): JsonObject =
+      if (fields.isEmpty())
+        EMPTY
+      else {
+        val definedFields = fields.filter { it.second.isDefined() }
+        if (definedFields.isEmpty())
+          EMPTY
+        else
+          JsonObject(definedFields.toMap())
+      }
+
+    fun of(fields: Collection<Pair<JsonString, Json>>): JsonObject =
+      if (fields.isEmpty())
+        EMPTY
+      else {
+        val definedFields = fields.filter { it.second.isDefined() }
+        if (definedFields.isEmpty())
+          EMPTY
+        else
+          JsonObject(definedFields.toMap())
+      }
+
+    fun of(fields: Map<JsonString, Json>): JsonObject =
+      if (fields.isEmpty())
+        EMPTY
+      else {
+        val definedFields = fields.filter { it.value.isDefined() }
+        if (definedFields.isEmpty())
+          EMPTY
+        else
+          JsonObject(definedFields.toMap())
+      }
   }
 }

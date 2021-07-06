@@ -18,7 +18,7 @@ class FetchOptions private constructor(
     companion object {
       private const val queryParameterName = "chunk"
       internal val DEFAULT = ChunkSize(value = 500)
-      private val VALIDATED_DEFAULT = SuccessfulValidation(DEFAULT)
+      private val VALIDATED_DEFAULT = SuccessfulValidation.of(DEFAULT)
 
       fun at(request: HttpServletRequest): Validated<ChunkSize> {
         val parameter = request.getParameter(queryParameterName)
@@ -30,9 +30,9 @@ class FetchOptions private constructor(
             if (value == DEFAULT.value)
               VALIDATED_DEFAULT
             else
-              SuccessfulValidation(ChunkSize(value))
+              SuccessfulValidation.of(ChunkSize(value))
           } catch (e: NumberFormatException) {
-            UnsuccessfulValidation("Illegal $queryParameterName: ${e.message}")
+            UnsuccessfulValidation.of("Illegal $queryParameterName: ${e.message}")
           }
         }
       }
@@ -44,7 +44,7 @@ class FetchOptions private constructor(
     companion object {
       private const val queryParameterName = "limit"
       internal val DEFAULT = Limit(value = 500)
-      private val VALIDATED_DEFAULT = SuccessfulValidation(DEFAULT)
+      private val VALIDATED_DEFAULT = SuccessfulValidation.of(DEFAULT)
 
       fun at(request: HttpServletRequest): Validated<Limit> {
         val parameter = request.getParameter(queryParameterName)
@@ -56,9 +56,9 @@ class FetchOptions private constructor(
             if (value == DEFAULT.value)
               VALIDATED_DEFAULT
             else
-              SuccessfulValidation(Limit(value))
+              SuccessfulValidation.of(Limit(value))
           } catch (e: NumberFormatException) {
-            UnsuccessfulValidation("Illegal $queryParameterName: ${e.message}")
+            UnsuccessfulValidation.of("Illegal $queryParameterName: ${e.message}")
           }
         }
       }
@@ -70,7 +70,7 @@ class FetchOptions private constructor(
     companion object {
       private const val queryParameterName = "offset"
       internal val DEFAULT = Offset(value = 500)
-      private val VALIDATED_DEFAULT = SuccessfulValidation(DEFAULT)
+      private val VALIDATED_DEFAULT = SuccessfulValidation.of(DEFAULT)
 
       fun at(request: HttpServletRequest): Validated<Offset> {
         val parameter = request.getParameter(queryParameterName)
@@ -82,9 +82,9 @@ class FetchOptions private constructor(
             if (value == DEFAULT.value)
               VALIDATED_DEFAULT
             else
-              SuccessfulValidation(Offset(value))
+              SuccessfulValidation.of(Offset(value))
           } catch (e: NumberFormatException) {
-            UnsuccessfulValidation("Illegal $queryParameterName: ${e.message}")
+            UnsuccessfulValidation.of("Illegal $queryParameterName: ${e.message}")
           }
         }
       }
@@ -96,7 +96,7 @@ class FetchOptions private constructor(
     companion object {
       private const val queryParameterName = "prefetch"
       internal val DEFAULT = PrefetchSize(value = 500)
-      private val VALIDATED_DEFAULT = SuccessfulValidation(DEFAULT)
+      private val VALIDATED_DEFAULT = SuccessfulValidation.of(DEFAULT)
 
       fun at(request: HttpServletRequest): Validated<PrefetchSize> {
         val parameter = request.getParameter(queryParameterName)
@@ -108,9 +108,9 @@ class FetchOptions private constructor(
             if (value == DEFAULT.value)
               VALIDATED_DEFAULT
             else
-              SuccessfulValidation(PrefetchSize(value))
+              SuccessfulValidation.of(PrefetchSize(value))
           } catch (e: NumberFormatException) {
-            UnsuccessfulValidation("Illegal $queryParameterName: ${e.message}")
+            UnsuccessfulValidation.of("Illegal $queryParameterName: ${e.message}")
           }
         }
       }
@@ -129,10 +129,10 @@ class FetchOptions private constructor(
         fun of(value: String): Validated<Property> =
           when {
             value.isEmpty() ->
-              UnsuccessfulValidation("Illegal $queryParameterName.Property: value can not be empty")
+              UnsuccessfulValidation.of("Illegal $queryParameterName.Property: value can not be empty")
             value.isBlank() ->
-              UnsuccessfulValidation("Illegal $queryParameterName.Property: value can not be blank")
-            else -> SuccessfulValidation(Property(value.trim()))
+              UnsuccessfulValidation.of("Illegal $queryParameterName.Property: value can not be blank")
+            else -> SuccessfulValidation.of(Property(value.trim()))
           }
       }
     }
@@ -142,7 +142,7 @@ class FetchOptions private constructor(
     companion object {
       private const val queryParameterName = "orderBy"
       internal val DEFAULT = OrderBy(emptyArray())
-      private val VALIDATED_DEFAULT = SuccessfulValidation(DEFAULT)
+      private val VALIDATED_DEFAULT = SuccessfulValidation.of(DEFAULT)
 
       fun at(request: HttpServletRequest): Validated<OrderBy> {
         val parameter = request.getParameterValues(queryParameterName)
@@ -153,36 +153,36 @@ class FetchOptions private constructor(
           for (value in parameter) {
             when {
               value == null ->
-                return UnsuccessfulValidation("Illegal $queryParameterName.Property: value can not be null")
+                return UnsuccessfulValidation.of("Illegal $queryParameterName.Property: value can not be null")
               value.isEmpty() ->
-                return UnsuccessfulValidation("Illegal $queryParameterName.Property: value can not be empty")
+                return UnsuccessfulValidation.of("Illegal $queryParameterName.Property: value can not be empty")
               value.isBlank() ->
-                return UnsuccessfulValidation("Illegal $queryParameterName.Property: value can not be blank")
+                return UnsuccessfulValidation.of("Illegal $queryParameterName.Property: value can not be blank")
               value.startsWith('-') -> {
                 val property = Property.of(value.substring(1))
                 if (property.ok)
                   orders.add(Order(Direction.DESC, property.value))
                 else
-                  return UnsuccessfulValidation(property.failure)
+                  return UnsuccessfulValidation.of(property.failure)
               }
               value.startsWith('+') -> {
                 val property = Property.of(value.substring(1))
                 if (property.ok)
                   orders.add(Order(Direction.ASC, property.value))
                 else
-                  return UnsuccessfulValidation(property.failure)
+                  return UnsuccessfulValidation.of(property.failure)
               }
               else -> {
                 val property = Property.of(value)
                 if (property.ok)
                   orders.add(Order(Direction.ASC, property.value))
                 else
-                  return UnsuccessfulValidation(property.failure)
+                  return UnsuccessfulValidation.of(property.failure)
               }
             }
 
           }
-          SuccessfulValidation(OrderBy(orders.toTypedArray()))
+          SuccessfulValidation.of(OrderBy(orders.toTypedArray()))
         }
       }
     }
@@ -191,7 +191,7 @@ class FetchOptions private constructor(
   companion object {
     private val DEFAULT_FETCH_OPTIONS =
       FetchOptions(ChunkSize.DEFAULT, Limit.DEFAULT, Offset.DEFAULT, PrefetchSize.DEFAULT, OrderBy.DEFAULT)
-    private val VALIDATED_DEFAULT_FETCH_OPTIONS = SuccessfulValidation(DEFAULT_FETCH_OPTIONS)
+    private val VALIDATED_DEFAULT_FETCH_OPTIONS = SuccessfulValidation.of(DEFAULT_FETCH_OPTIONS)
 
     fun at(request: HttpServletRequest): Validated<FetchOptions> {
       val chunkSize = ChunkSize.at(request)
@@ -216,7 +216,7 @@ class FetchOptions private constructor(
         ) {
           VALIDATED_DEFAULT_FETCH_OPTIONS
         } else {
-          SuccessfulValidation(
+          SuccessfulValidation.of(
             FetchOptions(chunkSize.value, limit.value, offset.value, prefetchSize.value, orderBy.value)
           )
         }

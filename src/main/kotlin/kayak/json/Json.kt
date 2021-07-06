@@ -161,14 +161,14 @@ sealed interface Json {
    * @return the `object` (map of strings to nodes) represented by the node.
    * @throws IllegalJsonInterpretation if the node is not a JSON object.
    */
-  fun asObject(): Map<StringValue, Json>
+  fun asObject(): Map<JsonString, Json>
 
   /**
    * @param defaultTo default value to provide when no value exists.
    * @return the `object` represented by the node, defaultTo when node is null or undefined.
    * @throws IllegalJsonInterpretation if the node is not a JSON object.
    */
-  fun asObjectOrElse(defaultTo: Map<StringValue, Json>): Map<StringValue, Json>
+  fun asObjectOrElse(defaultTo: Map<JsonString, Json>): Map<JsonString, Json>
 
   /**@return `true` if the node represents `null` or a JSON object, `false` other way*/
   fun isNullableObject() = false
@@ -177,11 +177,11 @@ sealed interface Json {
    * @return the `object` (map of strings to nodes) or `null` represented by the node.
    * @throws IllegalJsonInterpretation if the node is not `null` or a JSON object.
    */
-  fun asNullableObject(): Map<StringValue, Json>?
+  fun asNullableObject(): Map<JsonString, Json>?
 
   operator fun get(index: Int): Json = IllegalJson
   operator fun get(fieldName: String): Json = IllegalJson
-  operator fun get(fieldName: StringValue): Json = IllegalJson
+  operator fun get(fieldName: JsonString): Json = IllegalJson
 
   companion object {
     fun parse(input: String, desiredBufferCapacity: Int = input.length): Json = JsonParser.of(input, desiredBufferCapacity).parse()
@@ -194,11 +194,19 @@ sealed interface Json {
 
     fun parse(input: java.io.Reader, desiredBufferCapacity: Int = JsonParser.DEFAULT_BUFFER_CAPACITY): Json =
       JsonParser.of(input, desiredBufferCapacity).parse()
+
+    fun field(name: CharSequence, value: Json): Pair<JsonString, Json> = field(JsonString.of(name.toString()), value)
+
+    fun field(name: JsonString, value: Json): Pair<JsonString, Json> = Pair(name, value)
   }
 }
 
 internal object IllegalJson : Json {
+  override fun isDefined() = throw IllegalJsonInterpretation("ILLEGAL Json")
+
   override fun isUndefined() = throw IllegalJsonInterpretation("ILLEGAL Json")
+
+  override fun isNull() = throw IllegalJsonInterpretation("ILLEGAL Json")
 
   override fun asBoolean() = throw IllegalJsonInterpretation("ILLEGAL Json")
   override fun isTrue() = throw IllegalJsonInterpretation("ILLEGAL Json")
@@ -261,12 +269,14 @@ internal object IllegalJson : Json {
 
   override fun asObject() = throw IllegalJsonInterpretation("ILLEGAL Json")
 
-  override fun asObjectOrElse(defaultTo: Map<StringValue, Json>) = throw IllegalJsonInterpretation("ILLEGAL Json")
+  override fun asObjectOrElse(defaultTo: Map<JsonString, Json>) = throw IllegalJsonInterpretation("ILLEGAL Json")
 
   override fun asNullableObject() = throw IllegalJsonInterpretation("ILLEGAL Json")
 }
 
-internal object UndefinedJson : Json {
+object JsonUndefined : Json {
+  override fun isDefined() = false
+
   override fun isUndefined() = true
 
   override fun asBoolean() = throw IllegalJsonInterpretation("Json node is undefined")
@@ -330,12 +340,12 @@ internal object UndefinedJson : Json {
 
   override fun asObject() = throw IllegalJsonInterpretation("Json node is undefined")
 
-  override fun asObjectOrElse(defaultTo: Map<StringValue, Json>) = defaultTo
+  override fun asObjectOrElse(defaultTo: Map<JsonString, Json>) = defaultTo
 
   override fun asNullableObject() = throw IllegalJsonInterpretation("Json node is undefined")
 }
 
-object NullNode : Json {
+object JsonNull : Json {
   override fun isNull(): Boolean = true
 
   override fun isNullableBoolean() = true
@@ -402,9 +412,9 @@ object NullNode : Json {
 
   override fun isNullableObject() = true
 
-  override fun asNullableObject(): Map<StringValue, Json>? = null
+  override fun asNullableObject(): Map<JsonString, Json>? = null
 
-  override fun asObjectOrElse(defaultTo: Map<StringValue, Json>) = defaultTo
+  override fun asObjectOrElse(defaultTo: Map<JsonString, Json>) = defaultTo
 
   override fun isNullableArray() = true
 
@@ -415,7 +425,7 @@ object NullNode : Json {
   override fun asArrayOrElse(defaultTo: List<Json>) = defaultTo
 }
 
-enum class BooleanNode : Json {
+enum class JsonBoolean : Json {
   TRUE {
     override fun toString() = "true"
     override fun asBoolean() = true
@@ -483,9 +493,9 @@ enum class BooleanNode : Json {
 
   override fun asObject() = throw IllegalJsonInterpretation("Json node is boolean")
 
-  override fun asNullableObject(): Map<StringValue, Json>? = throw IllegalJsonInterpretation("Json node is boolean")
+  override fun asNullableObject(): Map<JsonString, Json>? = throw IllegalJsonInterpretation("Json node is boolean")
 
-  override fun asObjectOrElse(defaultTo: Map<StringValue, Json>) = throw IllegalJsonInterpretation("Json node is boolean")
+  override fun asObjectOrElse(defaultTo: Map<JsonString, Json>) = throw IllegalJsonInterpretation("Json node is boolean")
 
   override fun isNullableArray() = throw IllegalJsonInterpretation("Json node is boolean")
 
@@ -494,10 +504,14 @@ enum class BooleanNode : Json {
   override fun asNullableArray(): List<Json>? = throw IllegalJsonInterpretation("Json node is boolean")
 
   override fun asArrayOrElse(defaultTo: List<Json>) = throw IllegalJsonInterpretation("Json node is boolean")
+
+  companion object {
+    fun of(value: Boolean): JsonBoolean = if (value) TRUE else FALSE
+  }
 }
 
 @JvmInline
-value class NumberNode private constructor(private val value: String) : Json {
+value class JsonNumber private constructor(private val value: String) : Json {
   override fun isNumber() = true
 
   override fun asNumber() = value
@@ -560,9 +574,9 @@ value class NumberNode private constructor(private val value: String) : Json {
 
   override fun asObject() = throw IllegalJsonInterpretation("Json node is number")
 
-  override fun asNullableObject(): Map<StringValue, Json>? = throw IllegalJsonInterpretation("Json node is number")
+  override fun asNullableObject(): Map<JsonString, Json>? = throw IllegalJsonInterpretation("Json node is number")
 
-  override fun asObjectOrElse(defaultTo: Map<StringValue, Json>) = throw IllegalJsonInterpretation("Json node is number")
+  override fun asObjectOrElse(defaultTo: Map<JsonString, Json>) = throw IllegalJsonInterpretation("Json node is number")
 
   override fun isNullableArray() = throw IllegalJsonInterpretation("Json node is number")
 
@@ -573,91 +587,111 @@ value class NumberNode private constructor(private val value: String) : Json {
   override fun asArrayOrElse(defaultTo: List<Json>) = throw IllegalJsonInterpretation("Json node is number")
 
   companion object {
-    private val ZERO = NumberNode("0")
-    private val ONE = NumberNode("1")
-    private val TWO = NumberNode("2")
-    private val TEN = NumberNode("10")
-    private val ZERO_DEC = NumberNode("0.0")
-    private val ONE_DEC = NumberNode("1.0")
-    private val TEN_DEC = NumberNode("10.0")
+    private val ZERO = JsonNumber("0")
+    private val ONE = JsonNumber("1")
+    private val TWO = JsonNumber("2")
+    private val TEN = JsonNumber("10")
+    private val ZERO_DEC = JsonNumber("0.0")
+    private val ONE_DEC = JsonNumber("1.0")
+    private val TEN_DEC = JsonNumber("10.0")
 
-    operator fun invoke(value: String): NumberNode {
-      return when (value) {
+    fun of(value: CharSequence): JsonNumber {
+      return when (val s = value.toString()) {
         "0" -> ZERO
         "1" -> ONE
         "2" -> TWO
         "10" -> TEN
-        else -> makeFrom(value)
+        else -> makeFrom(s)
       }
     }
 
-    operator fun invoke(value: Int): NumberNode {
+    fun of(value: Byte): JsonNumber {
+      return when (value.toInt()) {
+        0 -> ZERO
+        1 -> ONE
+        2 -> TWO
+        10 -> TEN
+        else -> JsonNumber(value.toString())
+      }
+    }
+
+    fun of(value: Short): JsonNumber {
+      return when (value.toInt()) {
+        0 -> ZERO
+        1 -> ONE
+        2 -> TWO
+        10 -> TEN
+        else -> JsonNumber(value.toString())
+      }
+    }
+
+    fun of(value: Int): JsonNumber {
       return when (value) {
         0 -> ZERO
         1 -> ONE
         2 -> TWO
         10 -> TEN
-        else -> NumberNode(value.toString())
+        else -> JsonNumber(value.toString())
       }
     }
 
-    operator fun invoke(value: Long): NumberNode {
+    fun of(value: Long): JsonNumber {
       return when (value) {
         0L -> ZERO
         1L -> ONE
         2L -> TWO
         10L -> TEN
-        else -> NumberNode(value.toString())
+        else -> JsonNumber(value.toString())
       }
     }
 
-    operator fun invoke(value: BigInteger): NumberNode {
+    fun of(value: BigInteger): JsonNumber {
       return when (value) {
         BigInteger.ZERO -> ZERO
         BigInteger.ONE -> ONE
         BigInteger.TWO -> TWO
         BigInteger.TEN -> TEN
-        else -> NumberNode(value.toString())
+        else -> JsonNumber(value.toString())
       }
     }
 
-    operator fun invoke(value: Float): NumberNode {
+    fun of(value: Float): JsonNumber {
       return when (value) {
         0.0f -> ZERO_DEC
         1.0f -> ONE_DEC
         10.0f -> ONE_DEC
-        else -> NumberNode(value.toString())
+        else -> JsonNumber(value.toString())
       }
     }
 
-    operator fun invoke(value: Double): NumberNode {
+    fun of(value: Double): JsonNumber {
       return when (value) {
         0.0 -> ZERO_DEC
         1.0 -> ONE_DEC
         10.0 -> ONE_DEC
-        else -> NumberNode(value.toString())
+        else -> JsonNumber(value.toString())
       }
     }
 
-    operator fun invoke(value: BigDecimal): NumberNode {
+    fun of(value: BigDecimal): JsonNumber {
       return when (value) {
         BigDecimal.ZERO -> ZERO_DEC
         BigDecimal.ONE -> ONE_DEC
         BigDecimal.TEN -> TEN_DEC
-        else -> NumberNode(value.toString())
+        else -> JsonNumber(value.toString())
       }
     }
 
-    private fun makeFrom(value: String): NumberNode {
+    private fun makeFrom(value: String): JsonNumber {
       if (!JsonNumberValidator.isValid(value))
         throw IllegalArgumentException("Attempt to construct a JsonNumber with a String [$value] that does not match the JSON number specification.")
-      return NumberNode(value)
+      return JsonNumber(value)
     }
   }
 }
 
 @JvmInline
-value class StringValue private constructor(private val value: String) : Json, Comparable<StringValue> {
+value class JsonString private constructor(private val value: String) : Json, Comparable<JsonString> {
   override fun isString() = true
 
   override fun asString() = value
@@ -718,9 +752,9 @@ value class StringValue private constructor(private val value: String) : Json, C
 
   override fun asObject() = throw IllegalJsonInterpretation("Json node is string")
 
-  override fun asNullableObject(): Map<StringValue, Json>? = throw IllegalJsonInterpretation("Json node is string")
+  override fun asNullableObject(): Map<JsonString, Json>? = throw IllegalJsonInterpretation("Json node is string")
 
-  override fun asObjectOrElse(defaultTo: Map<StringValue, Json>) = throw IllegalJsonInterpretation("Json node is string")
+  override fun asObjectOrElse(defaultTo: Map<JsonString, Json>) = throw IllegalJsonInterpretation("Json node is string")
 
   override fun isNullableArray() = throw IllegalJsonInterpretation("Json node is string")
 
@@ -732,12 +766,12 @@ value class StringValue private constructor(private val value: String) : Json, C
 
   override fun toString() = "StringValue{value='$value'}"
 
-  override operator fun compareTo(other: StringValue): Int = value.compareTo(other.value)
+  override operator fun compareTo(other: JsonString): Int = value.compareTo(other.value)
 
   companion object {
-    private val EMPTY = StringValue("")
+    private val EMPTY = JsonString("")
 
-    operator fun invoke(value: String) = if ("" == value) EMPTY else StringValue(value)
+    fun of(value: CharSequence) = if (value.isEmpty()) EMPTY else JsonString(value.toString())
   }
 }
 

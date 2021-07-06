@@ -4,7 +4,6 @@ import kayak.json.CompactJsonWriter
 import kayak.json.JsonFormatter
 import kayak.json.JsonWriter
 import kayak.json.PrettyJsonWriter
-import java.util.logging.Level
 
 /** Environment in which barman is running.  */
 enum class Environment {
@@ -77,13 +76,11 @@ enum class Environment {
     val current = readConfiguration()
 
     private fun readConfiguration(): Environment {
-      val logger = java.util.logging.Logger.getLogger("kayak.Environment")
+      val logger = org.slf4j.LoggerFactory.getLogger("kayak.Environment")
       val value = System.getenv("ENVIRONMENT")
 
       return if (value == null || value.isEmpty() || value.isBlank()) {
-        if (logger.isLoggable(Level.WARNING)) {
-          logger.warning("No ENVIRONMENT definition found, using 'DEVELOPMENT'")
-        }
+        logger.warn("No ENVIRONMENT definition found, using 'DEVELOPMENT'")
         DEVELOPMENT
       } else {
         val environment = try {
@@ -91,9 +88,7 @@ enum class Environment {
         } catch (unknownValue: IllegalArgumentException) {
           throw KayakConfigurationFailure("PORT should be one of ${values()}, but it is configured as '$value'")
         }
-        if (logger.isLoggable(Level.INFO)) {
-          logger.info("ENVIRONMENT configured to '$environment'")
-        }
+        logger.info("ENVIRONMENT configured to '{}'", environment)
         environment
       }
     }
