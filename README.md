@@ -1,4 +1,4 @@
-Kayak [![Build Status](https://travis-ci.com/matero/ae.svg?branch=main)](https://travis-ci.com/matero/kayak)
+Kayak [![Build Status](https://travis-ci.com/matero/kayak.svg?branch=main)](https://travis-ci.com/matero/kayak)
 ============================================================================================================
 
 Simple Kotlin to develop little tiny agile monolithic webapps using plain servlets as starting point.
