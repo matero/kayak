@@ -336,16 +336,16 @@ sealed interface Json : AsJson {
 
   companion object {
     // Boolean factory method
-    fun from(value: Boolean?): Json = if (value == null) JsonNull else of(value)
+    fun from(value: Boolean?): Json = if (value == null) Null else of(value)
 
     fun of(value: Boolean): Json = if (value) JsonBoolean.TRUE else JsonBoolean.FALSE
 
     // Arrays factory methods
-    fun from(elements: Iterator<Json>?): Json = if (elements == null) JsonNull else of(elements)
+    fun from(elements: Iterator<Json>?): Json = if (elements == null) Null else of(elements)
 
-    fun from(elements: Iterable<Json>?): Json = if (elements == null) JsonNull else of(elements)
+    fun from(elements: Iterable<Json>?): Json = if (elements == null) Null else of(elements)
 
-    fun from(elements: List<Json>?): Json = if (elements == null) JsonNull else of(elements)
+    fun from(elements: List<Json>?): Json = if (elements == null) Null else of(elements)
 
     fun of(elements: Iterator<Json>): Json = JsonArray.make(elements)
 
@@ -356,21 +356,21 @@ sealed interface Json : AsJson {
     fun of(elements: List<Json>): Json = JsonArray.make(elements)
 
     // Number factory methods
-    fun from(value: Byte?): Json = if (value == null) JsonNull else of(value)
+    fun from(value: Byte?): Json = if (value == null) Null else of(value)
 
-    fun from(value: Short?): Json = if (value == null) JsonNull else of(value)
+    fun from(value: Short?): Json = if (value == null) Null else of(value)
 
-    fun from(value: Int?): Json = if (value == null) JsonNull else of(value)
+    fun from(value: Int?): Json = if (value == null) Null else of(value)
 
-    fun from(value: Long?): Json = if (value == null) JsonNull else of(value)
+    fun from(value: Long?): Json = if (value == null) Null else of(value)
 
-    fun from(value: BigInteger?): Json = if (value == null) JsonNull else of(value)
+    fun from(value: BigInteger?): Json = if (value == null) Null else of(value)
 
-    fun from(value: Float?): Json = if (value == null) JsonNull else of(value)
+    fun from(value: Float?): Json = if (value == null) Null else of(value)
 
-    fun from(value: Double?): Json = if (value == null) JsonNull else of(value)
+    fun from(value: Double?): Json = if (value == null) Null else of(value)
 
-    fun from(value: BigDecimal?): Json = if (value == null) JsonNull else of(value)
+    fun from(value: BigDecimal?): Json = if (value == null) Null else of(value)
 
     fun of(value: Byte): Json = JsonNumber.make(value)
 
@@ -390,11 +390,11 @@ sealed interface Json : AsJson {
 
     // Object factory methods
 
-    fun from(field: Pair<String, Json>?): Json = if (field == null) JsonNull else of(field)
+    fun from(field: Pair<String, Json>?): Json = if (field == null) Null else of(field)
 
-    fun from(fields: Collection<Pair<String, Json>>?): Json = if (fields == null) JsonNull else of(fields)
+    fun from(fields: Collection<Pair<String, Json>>?): Json = if (fields == null) Null else of(fields)
 
-    fun from(fields: Map<String, Json>?): Json = if (fields == null) JsonNull else of(fields)
+    fun from(fields: Map<String, Json>?): Json = if (fields == null) Null else of(fields)
 
     fun of(field: Pair<String, Json>): Json = JsonObject.make(field)
 
@@ -414,7 +414,7 @@ sealed interface Json : AsJson {
     fun of(fields: Map<String, Json>): Json = JsonObject.make(fields)
 
     // String factory methods
-    fun from(value: CharSequence?): Json  = if (value == null) JsonNull else of(value)
+    fun from(value: CharSequence?): Json  = if (value == null) Null else of(value)
 
     fun of(value: CharSequence): Json = JsonString.make(value)
 
@@ -429,6 +429,96 @@ sealed interface Json : AsJson {
 
     fun parse(input: java.io.Reader, desiredBufferCapacity: Int = JsonParser.DEFAULT_BUFFER_CAPACITY): Json =
       JsonParser.of(input, desiredBufferCapacity).parse()
+  }
+
+  object Null : Json {
+    override fun type(): Json.NodeType = Json.NodeType.NULL
+
+    override fun isNull(): Boolean = true
+
+    override fun isNotNull(): Boolean = false
+
+    override fun isNullableBoolean() = true
+
+    override fun asNullableBoolean(): Boolean? = null
+
+    override fun asBooleanOrElse(defaultTo: Boolean) = defaultTo
+
+    override fun isNullableString() = true
+
+    override fun asNullableString(): String? = null
+
+    override fun asStringOrElse(defaultTo: String) = defaultTo
+
+    override fun isNullableNumber() = true
+
+    override fun asNullableNumber(): String? = null
+
+    override fun asNumberOrElse(defaultTo: String) = defaultTo
+
+    override fun asByteOrElse(defaultTo: Byte) = defaultTo
+
+    override fun asShortOrElse(defaultTo: Short) = defaultTo
+
+    override fun asIntOrElse(defaultTo: Int) = defaultTo
+
+    override fun asLongOrElse(defaultTo: Long) = defaultTo
+
+    override fun asFloatOrElse(defaultTo: Float) = defaultTo
+
+    override fun asDoubleOrElse(defaultTo: Double) = defaultTo
+
+    override fun asBigIntegerOrElse(defaultTo: BigInteger) = defaultTo
+
+    override fun asBigDecimalOrElse(defaultTo: BigDecimal) = defaultTo
+
+    override fun isNullableObject() = true
+
+    override fun asNullableObject(): Map<String, Json>? = null
+
+    override fun asObjectOrElse(defaultTo: Map<String, Json>) = defaultTo
+
+    override fun isNullableArray() = true
+
+    override fun asNullableArray(): List<Json>? = null
+
+    override fun asArrayOrElse(defaultTo: List<Json>) = defaultTo
+  }
+
+  object Undefined : Json {
+    override fun type() = Json.NodeType.UNDEFINED
+
+    override fun isDefined() = false
+
+    override fun isUndefined() = true
+
+    override fun isNotNull(): Boolean = false
+
+    override fun asBooleanOrElse(defaultTo: Boolean) = defaultTo
+
+    override fun asStringOrElse(defaultTo: String) = defaultTo
+
+    override fun asNumberOrElse(defaultTo: String) = defaultTo
+
+    override fun asByteOrElse(defaultTo: Byte) = defaultTo
+
+    override fun asShortOrElse(defaultTo: Short) = defaultTo
+
+    override fun asIntOrElse(defaultTo: Int) = defaultTo
+
+    override fun asLongOrElse(defaultTo: Long) = defaultTo
+
+    override fun asFloatOrElse(defaultTo: Float) = defaultTo
+
+    override fun asDoubleOrElse(defaultTo: Double) = defaultTo
+
+    override fun asBigIntegerOrElse(defaultTo: BigInteger) = defaultTo
+
+    override fun asBigDecimalOrElse(defaultTo: BigDecimal) = defaultTo
+
+    override fun asArrayOrElse(defaultTo: List<Json>) = defaultTo
+
+    override fun asObjectOrElse(defaultTo: Map<String, Json>) = defaultTo
   }
 }
 

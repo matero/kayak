@@ -14,7 +14,7 @@ internal value class JsonObject(private val fields: Map<String, Json>) : Json {
 
   override fun asNullableObject() = fields
 
-  override operator fun get(fieldName: CharSequence): Json = fields[fieldName] ?: JsonUndefined
+  override operator fun get(fieldName: CharSequence): Json = fields[fieldName] ?: Json.Undefined
 
   override fun toString() = "JsonObject{$fields}"
 

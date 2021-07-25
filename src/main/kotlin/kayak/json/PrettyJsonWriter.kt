@@ -17,8 +17,8 @@ class PrettyJsonWriter(private val lineSeparator: String = DEFAULT_LINE_SEPARATO
       is JsonString -> write(toWriter, node.asString())
       is JsonNumber -> writeNumber(toWriter, node.asNumber().toCharArray())
       is JsonBoolean -> toWriter.write(node.toString())
-      is JsonNull -> toWriter.write("null")
-      is JsonUndefined -> throw IllegalStateException("undefined nodes are not writeable")
+      is Json.Null -> toWriter.write("null")
+      is Json.Undefined -> throw IllegalStateException("undefined nodes are not writeable")
       is IllegalJson -> throw IllegalStateException("illegal nodes are not writeable")
     }
   }

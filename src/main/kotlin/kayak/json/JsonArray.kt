@@ -14,7 +14,7 @@ internal value class JsonArray private constructor(private val elements: List<Js
 
   override fun asNullableArray(): List<Json> = elements
 
-  override operator fun get(index: Int): Json = if (elements.size <= index) JsonUndefined else elements[index]
+  override operator fun get(index: Int): Json = if (elements.size <= index) Json.Undefined else elements[index]
 
   override fun toString() = "JsonArray{$elements}"
 

@@ -108,12 +108,12 @@ internal class JsonParser(private val input: Reader, private val buffer: CharArr
     }
   }
 
-  private fun readNull(): JsonNull {
+  private fun readNull(): Json.Null {
     read()
     readRequiredChar('u')
     readRequiredChar('l')
     readRequiredChar('l')
-    return JsonNull
+    return Json.Null
   }
 
   private fun readTrue(): JsonBoolean {

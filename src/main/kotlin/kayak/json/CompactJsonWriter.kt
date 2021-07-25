@@ -13,8 +13,8 @@ object CompactJsonWriter : JsonWriter() {
       is JsonString -> write(toWriter, node.asString())
       is JsonNumber -> write(toWriter, node.asNumber())
       is JsonBoolean -> toWriter.write(node.toString())
-      is JsonNull -> toWriter.write("null")
-      is JsonUndefined -> throw IllegalStateException("undefined nodes are not writeable")
+      is Json.Null -> toWriter.write("null")
+      is Json.Undefined -> throw IllegalStateException("undefined nodes are not writeable")
       is IllegalJson -> throw IllegalStateException("illegal nodes are not writeable")
     }
   }
