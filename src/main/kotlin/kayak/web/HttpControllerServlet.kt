@@ -4,6 +4,7 @@ import kayak.Environment
 import kayak.json.Json
 import kayak.json.JsonFormatter
 import kayak.json.JsonWriter
+import kayak.validation.Failure
 
 abstract class HttpControllerServlet() : HttpRouterServlet() {
   protected val jsonWriter: JsonWriter
@@ -23,6 +24,11 @@ abstract class HttpControllerServlet() : HttpRouterServlet() {
     get() = Json.parse(reader)
 
   protected fun Response.unprocessableEntity() = sendError(422)
+
+  protected fun Response.unprocessableEntity(failure: Failure) {
+    status = 422
+    writeJson(failure.asJson())
+  }
 
   protected fun Response.notFound() = sendError(Response.SC_NOT_FOUND)
 

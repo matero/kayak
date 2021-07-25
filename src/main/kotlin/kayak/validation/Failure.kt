@@ -1,7 +1,9 @@
 package kayak.validation
 
-interface Failure {
+import kayak.json.AsJson
+
+interface Failure : AsJson {
   fun message(): String = "failure"
 
-  fun details(): Map<String, Validated<*>> = emptyMap()
+  fun details(): Map<String, Failure> = emptyMap()
 }

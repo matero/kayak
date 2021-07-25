@@ -28,7 +28,14 @@ private object Valid : Validated<Unit> {
     if (v2.second.ok) {
       UnsuccessfulValidation.of(v1.second.failure)
     } else {
-      UnsuccessfulValidation.of(MultipleFailures(mapOf(v1, v2)))
+      UnsuccessfulValidation.of(
+        MultipleFailures(
+          mapOf(
+            v1.first to v1.second.failure,
+            v2.first to v2.second.failure
+          )
+        )
+      )
     }
   }
 }
@@ -56,7 +63,7 @@ fun <T> validate(validations: Iterable<Pair<String, Validated<*>>>): Validated<T
       return when (failedValidations.size) {
         0 -> Valid as Validated<T>
         1 -> UnsuccessfulValidation.of(failedValidations.first().second.failure)
-        else -> UnsuccessfulValidation.of(MultipleFailures(failedValidations.toMap()))
+        else -> UnsuccessfulValidation.of(MultipleFailures.of(failedValidations))
       }
     }
   }
