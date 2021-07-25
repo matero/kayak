@@ -3,7 +3,7 @@ package kayak.json
 import java.math.BigDecimal
 import java.math.BigInteger
 
-object JsonUndefined : Json {
+internal object JsonUndefined : Json {
   override fun type() = Json.NodeType.UNDEFINED
 
   override fun isDefined() = false

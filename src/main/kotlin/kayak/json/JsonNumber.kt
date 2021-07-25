@@ -4,7 +4,7 @@ import java.math.BigDecimal
 import java.math.BigInteger
 
 @JvmInline
-value class JsonNumber private constructor(private val value: String) : Json {
+internal value class JsonNumber private constructor(private val value: String) : Json {
   override fun type() = Json.NodeType.NUMBER
 
   override fun isNumber() = true

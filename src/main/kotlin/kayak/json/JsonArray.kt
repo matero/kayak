@@ -1,7 +1,7 @@
 package kayak.json
 
 @JvmInline
-value class JsonArray private constructor(private val elements: List<Json>) : Json {
+internal value class JsonArray private constructor(private val elements: List<Json>) : Json {
   override fun type() = Json.NodeType.ARRAY
 
   override fun isArray() = true

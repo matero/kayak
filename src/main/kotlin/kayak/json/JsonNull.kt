@@ -3,7 +3,7 @@ package kayak.json
 import java.math.BigDecimal
 import java.math.BigInteger
 
-object JsonNull : Json {
+internal object JsonNull : Json {
   override fun type(): Json.NodeType = Json.NodeType.NULL
 
   override fun isNull(): Boolean = true

@@ -1,7 +1,7 @@
 package kayak.json
 
 @JvmInline
-value class JsonObject(private val fields: Map<JsonString, Json>) : Json {
+internal value class JsonObject(private val fields: Map<JsonString, Json>) : Json {
   override fun type() = Json.NodeType.OBJECT
 
   override fun isObject() = true

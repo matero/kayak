@@ -1,7 +1,7 @@
 package kayak.json
 
 @JvmInline
-value class JsonString private constructor(private val value: String) : Json {
+internal value class JsonString private constructor(private val value: String) : Json {
   override fun type() = Json.NodeType.STRING
 
   override fun isString() = true

@@ -1,6 +1,6 @@
 package kayak.json
 
-enum class JsonBoolean : Json {
+internal enum class JsonBoolean : Json {
   TRUE {
     override fun asString() = "true"
     override fun asBoolean() = true
