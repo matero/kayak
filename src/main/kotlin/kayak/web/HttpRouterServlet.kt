@@ -1,9 +1,25 @@
 package kayak.web
 
 import java.io.IOException
+import java.lang.IllegalArgumentException
+import java.util.*
 import java.util.regex.Pattern
+import kotlin.collections.ArrayList
 
 abstract class HttpRouterServlet : jakarta.servlet.http.HttpServlet() {
+
+  protected object application {
+    operator fun div(selector: ApplicationContentTypeSelector): ContentType {
+      when (selector) {
+        json -> DefaultContentType.APPLICATION_JSON
+      }
+      throw IllegalArgumentException("""unknown ContentType: "application/$selector"""")
+    }
+  }
+
+  protected sealed interface ApplicationContentTypeSelector
+
+  protected object json : ApplicationContentTypeSelector
 
   protected fun Request.isIndex() = IndexPath.matches(this)
 
@@ -11,6 +27,29 @@ abstract class HttpRouterServlet : jakarta.servlet.http.HttpServlet() {
 
   protected open fun notAuthorized(response: Response) {
     response.status = Response.SC_FORBIDDEN
+  }
+
+  protected fun Request.headers(name: String): Enumeration<String> =
+    getHeaders("Accept") ?: throw ServletException("request headers can not be accessed, please update your server configuration")
+
+  protected fun Request.accepts(contentType: String): Boolean = accepts(ContentType.of(contentType))
+
+  protected fun Request.accepts(contentType: ContentType): Boolean {
+    val values = headers("Accept")
+
+    if (!values.hasMoreElements()) {
+      return true // not defined -> accepts anything
+    }
+
+    do {
+      val header = values.nextElement()
+
+      if (contentType.matches(header)) {
+        return true
+      }
+    } while (values.hasMoreElements())
+
+    return false
   }
 
   /**

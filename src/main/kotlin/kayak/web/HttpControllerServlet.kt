@@ -10,7 +10,7 @@ abstract class HttpControllerServlet() : HttpRouterServlet() {
   protected val jsonWriter: JsonWriter
     get() = Environment.current.defaultJsonWriter
 
-  protected val jsonFormatter: JsonFormatter
+  private val jsonFormatter: JsonFormatter
     get() = Environment.current.defaultJsonFormatter
 
   protected operator fun Request.get(attributeName: String): Any? = this.getAttribute(attributeName)
