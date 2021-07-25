@@ -52,7 +52,7 @@ class PrettyJsonWriter(private val lineSeparator: String = DEFAULT_LINE_SEPARATO
     }
   }
 
-  private fun writeObjectNode(toWriter: Writer, objectFields: Map<JsonString, Json>, indent: Int) {
+  private fun writeObjectNode(toWriter: Writer, objectFields: Map<String, Json>, indent: Int) {
     if (objectFields.isEmpty()) {
       toWriter.write("{}")
     } else {
@@ -69,10 +69,10 @@ class PrettyJsonWriter(private val lineSeparator: String = DEFAULT_LINE_SEPARATO
     }
   }
 
-  private fun writeField(toWriter: Writer, field: Map.Entry<JsonString, Json>, indent: Int) {
+  private fun writeField(toWriter: Writer, field: Map.Entry<String, Json>, indent: Int) {
     toWriter.write(lineSeparator)
     addTabs(toWriter, indent + 1)
-    write(toWriter, field.key.asString())
+    write(toWriter, field.key)
     toWriter.write(": ")
     write(toWriter, field.value, indent + 1)
   }

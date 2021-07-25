@@ -26,7 +26,7 @@ import java.math.BigInteger
  * "`my field`", and its value is a JSON string.
  */
 sealed interface Json {
-  enum class NodeType(internal val id: String, internal val errorMessage: String = "JSON node of type '${id}'") {
+  enum class NodeType(private val id: String, internal val errorMessage: String = "JSON node of type '${id}'") {
     ARRAY("array"),
     BOOLEAN("boolean"),
     NUMBER("number"),
@@ -301,14 +301,14 @@ sealed interface Json {
    * @return the `object` (map of strings to nodes) represented by the node.
    * @throws IllegalJsonInterpretation if the node is not a JSON object.
    */
-  fun asObject(): Map<JsonString, Json> = throw IllegalJsonInterpretation(type())
+  fun asObject(): Map<String, Json> = throw IllegalJsonInterpretation(type())
 
   /**
    * @param defaultTo default value to provide when no value exists.
    * @return the `object` represented by the node, `defaultTo` when node is `null` or `undefined`.
    * @throws  IllegalJsonInterpretation if the node does not represents an object or `null` or `undefined`.
    */
-  fun asObjectOrElse(defaultTo: Map<JsonString, Json>): Map<JsonString, Json> = throw IllegalJsonInterpretation(type())
+  fun asObjectOrElse(defaultTo: Map<String, Json>): Map<String, Json> = throw IllegalJsonInterpretation(type())
 
   /**
    * @return `true` if the node represents `null` or a JSON object, `false` other way.
@@ -319,7 +319,7 @@ sealed interface Json {
    * @return the `object` (map of strings to nodes) or `null` represented by the node.
    * @throws  IllegalJsonInterpretation if the node does not represents an object or `null`.
    */
-  fun asNullableObject(): Map<JsonString, Json>? = throw IllegalJsonInterpretation(type())
+  fun asNullableObject(): Map<String, Json>? = throw IllegalJsonInterpretation(type())
 
   /**
    * @param index index of the value to get.
@@ -332,12 +332,6 @@ sealed interface Json {
    * @return the value of field named `fieldName` if the node represents an object; UndefinedNode otherwise.
    */
   operator fun get(fieldName: CharSequence): Json = IllegalJson
-
-  /**
-   * @param fieldName name of the field to get.
-   * @return the value of field named `fieldName` if the node represents an object; UndefinedNode otherwise.
-   */
-  operator fun get(fieldName: JsonString): Json = IllegalJson
 
   companion object {
     // Boolean factory method
@@ -356,7 +350,7 @@ sealed interface Json {
 
     fun of(elements: Iterable<Json>): Json = JsonArray.make(elements)
 
-    fun of(vararg elements: Json) = JsonArray.make(listOf(*elements))
+    fun of(vararg elements: Json): Json = JsonArray.make(listOf(*elements))
 
     fun of(elements: List<Json>): Json = JsonArray.make(elements)
 
@@ -395,15 +389,15 @@ sealed interface Json {
 
     // Object factory methods
 
-    fun from(field: Pair<JsonString, Json>?): Json = if (field == null) JsonNull else of(field)
+    fun from(field: Pair<String, Json>?): Json = if (field == null) JsonNull else of(field)
 
-    fun from(fields: Collection<Pair<JsonString, Json>>?): Json = if (fields == null) JsonNull else of(fields)
+    fun from(fields: Collection<Pair<String, Json>>?): Json = if (fields == null) JsonNull else of(fields)
 
-    fun from(fields: Map<JsonString, Json>?): Json = if (fields == null) JsonNull else of(fields)
+    fun from(fields: Map<String, Json>?): Json = if (fields == null) JsonNull else of(fields)
 
-    fun of(field: Pair<JsonString, Json>): Json = JsonObject.make(field)
+    fun of(field: Pair<String, Json>): Json = JsonObject.make(field)
 
-    fun of(vararg fields: Pair<JsonString, Json>):Json =
+    fun of(vararg fields: Pair<String, Json>):Json =
       if (fields.isEmpty())
         JsonObject.EMPTY
       else {
@@ -414,14 +408,14 @@ sealed interface Json {
           JsonObject.make(definedFields.toMap())
       }
 
-    fun of(fields: Collection<Pair<JsonString, Json>>): Json = JsonObject.make(fields)
+    fun of(fields: Collection<Pair<String, Json>>): Json = JsonObject.make(fields)
 
-    fun of(fields: Map<JsonString, Json>): Json = JsonObject.make(fields)
+    fun of(fields: Map<String, Json>): Json = JsonObject.make(fields)
 
     // String factory methods
-    fun from(value: CharSequence?) = if (value == null) JsonNull else of(value)
+    fun from(value: CharSequence?): Json  = if (value == null) JsonNull else of(value)
 
-    fun of(value: CharSequence) = JsonString.make(value)
+    fun of(value: CharSequence): Json = JsonString.make(value)
 
     // Json Parsing
     fun parse(input: String, desiredBufferCapacity: Int = input.length): Json = JsonParser.of(input, desiredBufferCapacity).parse()

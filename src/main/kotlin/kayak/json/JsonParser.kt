@@ -180,7 +180,7 @@ internal class JsonParser(private val input: Reader, private val buffer: CharArr
       return JsonObject.EMPTY
     }
 
-    val properties = LinkedHashMap<JsonString, Json>()
+    val properties = LinkedHashMap<String, Json>()
     do {
       skipWhiteSpace()
       val name = readName()
@@ -201,11 +201,11 @@ internal class JsonParser(private val input: Reader, private val buffer: CharArr
     return JsonObject(properties)
   }
 
-  private fun readName(): JsonString {
+  private fun readName(): String {
     if (current != '"'.code) {
       throw expected("name")
     }
-    return JsonString.make(readStringInternal())
+    return readStringInternal()
   }
 
   private fun readStringInternal(): String {

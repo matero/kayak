@@ -36,5 +36,5 @@ internal object JsonUndefined : Json {
 
   override fun asArrayOrElse(defaultTo: List<Json>) = defaultTo
 
-  override fun asObjectOrElse(defaultTo: Map<JsonString, Json>) = defaultTo
+  override fun asObjectOrElse(defaultTo: Map<String, Json>) = defaultTo
 }

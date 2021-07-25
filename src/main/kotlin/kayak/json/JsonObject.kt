@@ -1,35 +1,33 @@
 package kayak.json
 
 @JvmInline
-internal value class JsonObject(private val fields: Map<JsonString, Json>) : Json {
+internal value class JsonObject(private val fields: Map<String, Json>) : Json {
   override fun type() = Json.NodeType.OBJECT
 
   override fun isObject() = true
 
   override fun asObject() = fields
 
-  override fun asObjectOrElse(defaultTo: Map<JsonString, Json>) = fields
+  override fun asObjectOrElse(defaultTo: Map<String, Json>) = fields
 
   override fun isNullableObject() = true
 
   override fun asNullableObject() = fields
 
-  override operator fun get(fieldName: CharSequence): Json = get(JsonString.make(fieldName))
-
-  override operator fun get(fieldName: JsonString): Json = fields[fieldName] ?: JsonUndefined
+  override operator fun get(fieldName: CharSequence): Json = fields[fieldName] ?: JsonUndefined
 
   override fun toString() = "JsonObject{$fields}"
 
   companion object {
     internal val EMPTY: JsonObject = JsonObject(emptyMap())
 
-    fun make(field: Pair<JsonString, Json>): JsonObject =
+    fun make(field: Pair<String, Json>): JsonObject =
       if (field.second.isUndefined())
         EMPTY
       else
         JsonObject(mapOf(field))
 
-    fun make(fields: Collection<Pair<JsonString, Json>>): JsonObject =
+    fun make(fields: Collection<Pair<String, Json>>): JsonObject =
       if (fields.isEmpty())
         EMPTY
       else {
@@ -40,7 +38,7 @@ internal value class JsonObject(private val fields: Map<JsonString, Json>) : Jso
           JsonObject(definedFields.toMap())
       }
 
-    fun make(fields: Map<JsonString, Json>): JsonObject =
+    fun make(fields: Map<String, Json>): JsonObject =
       if (fields.isEmpty())
         EMPTY
       else {

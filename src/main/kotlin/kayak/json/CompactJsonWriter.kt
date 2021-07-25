@@ -35,7 +35,7 @@ object CompactJsonWriter : JsonWriter() {
     }
   }
 
-  private fun writeObjectNode(toWriter: Writer, fields: Map<JsonString, Json>) {
+  private fun writeObjectNode(toWriter: Writer, fields: Map<String, Json>) {
     if (fields.isEmpty()) {
       toWriter.write("{}")
     } else {
@@ -50,8 +50,8 @@ object CompactJsonWriter : JsonWriter() {
     }
   }
 
-  private fun writeField(toWriter: Writer, field: Map.Entry<JsonString, Json>) {
-    write(toWriter, field.key.asString())
+  private fun writeField(toWriter: Writer, field: Map.Entry<String, Json>) {
+    write(toWriter, field.key)
     toWriter.write(':'.code)
     write(toWriter, field.value)
   }

@@ -46,9 +46,9 @@ internal object JsonNull : Json {
 
   override fun isNullableObject() = true
 
-  override fun asNullableObject(): Map<JsonString, Json>? = null
+  override fun asNullableObject(): Map<String, Json>? = null
 
-  override fun asObjectOrElse(defaultTo: Map<JsonString, Json>) = defaultTo
+  override fun asObjectOrElse(defaultTo: Map<String, Json>) = defaultTo
 
   override fun isNullableArray() = true
 
