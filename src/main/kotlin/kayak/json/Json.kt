@@ -25,7 +25,7 @@ import java.math.BigInteger
  * `getStringValue("my field")` returns `true` if the node has a field called
  * "`my field`", and its value is a JSON string.
  */
-sealed interface Json {
+sealed interface Json : AsJson {
   enum class NodeType(private val id: String, internal val errorMessage: String = "JSON node of type '${id}'") {
     ARRAY("array"),
     BOOLEAN("boolean"),
@@ -37,6 +37,7 @@ sealed interface Json {
     ILLEGAL("ILLEGAL", "Illegal JSON node definition")
   }
 
+  override fun asJson() = this
   /**
    * @return the type of the represented node.
    */
