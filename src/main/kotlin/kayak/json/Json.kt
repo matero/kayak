@@ -324,15 +324,15 @@ sealed interface Json : AsJson {
 
   /**
    * @param index index of the value to get.
-   * @return the json value at `index` if the node represents an array; UndefinedNode otherwise.
+   * @return the json value at `index` if the node represents an array; Undefined otherwise.
    */
-  operator fun get(index: Int): Json = IllegalJson
+  operator fun get(index: Int): Json = Undefined
 
   /**
    * @param fieldName name of the field to get.
-   * @return the value of field named `fieldName` if the node represents an object; UndefinedNode otherwise.
+   * @return the value of field named `fieldName` if the node represents an object; Undefined otherwise.
    */
-  operator fun get(fieldName: CharSequence): Json = IllegalJson
+  operator fun get(fieldName: CharSequence): Json = Undefined
 
   companion object {
     // Boolean factory method
