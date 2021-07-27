@@ -1,10 +1,7 @@
 package kayak.web
 
 import java.io.IOException
-import java.lang.IllegalArgumentException
-import java.util.*
 import java.util.regex.Pattern
-import kotlin.collections.ArrayList
 
 abstract class HttpRouterServlet : jakarta.servlet.http.HttpServlet(), UseMimeTypes {
 
@@ -149,6 +146,21 @@ abstract class HttpRouterServlet : jakarta.servlet.http.HttpServlet(), UseMimeTy
       return false
     }
   }
+
+  object application {
+    operator fun div(selector: ApplicationContentTypeSelector): MediaType {
+      when (selector) {
+        json -> ApplicationMediaType.APPLICATION_JSON
+        xml -> ApplicationMediaType.APPLICATION_XML
+      }
+      throw IllegalArgumentException("""unknown ContentType: "application/$selector"""")
+    }
+  }
+
+  sealed interface ApplicationContentTypeSelector
+
+  object json : ApplicationContentTypeSelector
+  object xml : ApplicationContentTypeSelector
 
   protected fun path(value: String): Path {
     if (value.isEmpty() || "/" == value) {
